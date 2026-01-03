@@ -96,51 +96,163 @@ export default function ChatPageUi() {
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const router = useRouter();
 
+    // listen to user's conversation in Firebase
+    useEffect(() => {
+        if (!isOwner && activeConversation && currentUserId) {
+            // Set up real-time listener for the user's own conversation
+            const convRef = doc(db, "conversations", activeConversation);
+            
+            const unsubscribe = onSnapshot(convRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const updatedConversation: Conversation = {
+                id: docSnap.id,
+                userId: data.userId || '',
+                userName: data.userName || '',
+                userEmail: data.userEmail || '',
+                userPhone: data.userPhone || '',
+                lastMessage: data.lastMessage || '',
+                lastMessageTime: convertTimestampToDate(data.lastMessageTime),
+                unreadCount: data.unreadCount || 0,
+                messages: (data.messages || []).map((msg: any) => ({
+                    id: msg.id || `msg_${Date.now()}`,
+                    text: msg.text || '',
+                    sender: msg.sender || 'user',
+                    timestamp: convertTimestampToDate(msg.timestamp),
+                    read: msg.read || false,
+                    userName: msg.userName,
+                    userEmail: msg.userEmail,
+                    userPhone: msg.userPhone
+                })),
+                isActive: data.isActive !== false,
+                createdAt: convertTimestampToDate(data.createdAt)
+                };
+                
+                // Update the conversation in state
+                setConversations([updatedConversation]);
+                
+                // Update localStorage with the latest data
+                localStorage.setItem(`abidex_user_conversation_${currentUserId}`, JSON.stringify({
+                ...updatedConversation,
+                lastMessageTime: updatedConversation.lastMessageTime.toISOString(),
+                createdAt: updatedConversation.createdAt.toISOString(),
+                messages: updatedConversation.messages.map(msg => ({
+                    ...msg,
+                    timestamp: msg.timestamp.toISOString()
+                }))
+                }));
+            }
+            });
+            
+            return () => unsubscribe();
+        }
+    }, [isOwner, activeConversation, currentUserId]);
+
     // Check authentication state on component mount
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
+            if (user) {
             // CEO is logged in via Firebase
             setIsOwner(true);
             loadConversationsFromFirebase();
-        } else {
+            } else {
             // Regular user mode
             setIsOwner(false);
             loadUserDataFromLocalStorage();
-        }
-        setIsLoading(false);
+            }
+            setIsLoading(false);
         });
 
         return () => unsubscribe();
     }, []);
 
-    // Load user data from localStorage for regular users
+    // Load user's data from localStorage for regular users
     const loadUserDataFromLocalStorage = () => {
         const savedUserData = localStorage.getItem('abidex_chat_user');
         if (savedUserData) {
-        const userData = JSON.parse(savedUserData);
-        setUserName(userData.name || '');
-        setUserEmail(userData.email || '');
-        setUserPhone(userData.phone || '');
-        setCurrentUserId(userData.userId);
-        
-        // Load user's conversation from localStorage
-        const userConversation = localStorage.getItem(`abidex_user_conversation_${userData.userId}`);
-        if (userConversation) {
+            const userData = JSON.parse(savedUserData);
+            setUserName(userData.name || '');
+            setUserEmail(userData.email || '');
+            setUserPhone(userData.phone || '');
+            setCurrentUserId(userData.userId);
+            
+            // Load user's conversation from localStorage
+            const userConversation = localStorage.getItem(`abidex_user_conversation_${userData.userId}`);
+            if (userConversation) {
             const parsedConv = JSON.parse(userConversation);
             const conversationWithDates = {
-            ...parsedConv,
-            lastMessageTime: new Date(parsedConv.lastMessageTime),
-            createdAt: new Date(parsedConv.createdAt),
-            messages: parsedConv.messages.map((msg: any) => ({
+                ...parsedConv,
+                lastMessageTime: new Date(parsedConv.lastMessageTime),
+                createdAt: new Date(parsedConv.createdAt),
+                messages: parsedConv.messages.map((msg: any) => ({
                 ...msg,
                 timestamp: new Date(msg.timestamp)
-            }))
+                }))
             };
             setConversations([conversationWithDates]);
             setActiveConversation(parsedConv.id);
+            
+            // ALSO LOAD FROM FIREBASE FOR REAL-TIME UPDATES
+            if (parsedConv.id) {
+                loadUserConversationFromFirebase(parsedConv.id);
+            }
+            }
+            setIsUserFormVisible(false);
         }
-        setIsUserFormVisible(false);
+    };
+
+    // Load user's conversation from Firebase
+    const loadUserConversationFromFirebase = (conversationId: string) => {
+        try {
+            const convRef = doc(db, "conversations", conversationId);
+            
+            // Set up real-time listener for this conversation
+            const unsubscribe = onSnapshot(convRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const updatedConversation: Conversation = {
+                id: docSnap.id,
+                userId: data.userId || '',
+                userName: data.userName || '',
+                userEmail: data.userEmail || '',
+                userPhone: data.userPhone || '',
+                lastMessage: data.lastMessage || '',
+                lastMessageTime: convertTimestampToDate(data.lastMessageTime),
+                unreadCount: data.unreadCount || 0,
+                messages: (data.messages || []).map((msg: any) => ({
+                    id: msg.id || `msg_${Date.now()}`,
+                    text: msg.text || '',
+                    sender: msg.sender || 'user',
+                    timestamp: convertTimestampToDate(msg.timestamp),
+                    read: msg.read || false,
+                    userName: msg.userName,
+                    userEmail: msg.userEmail,
+                    userPhone: msg.userPhone
+                })),
+                isActive: data.isActive !== false,
+                createdAt: convertTimestampToDate(data.createdAt)
+                };
+                
+                // Update local state
+                setConversations([updatedConversation]);
+                
+                // Also update localStorage to persist the updates
+                localStorage.setItem(`abidex_user_conversation_${updatedConversation.userId}`, JSON.stringify({
+                ...updatedConversation,
+                lastMessageTime: updatedConversation.lastMessageTime.toISOString(),
+                createdAt: updatedConversation.createdAt.toISOString(),
+                messages: updatedConversation.messages.map(msg => ({
+                    ...msg,
+                    timestamp: msg.timestamp.toISOString()
+                }))
+                }));
+            }
+            });
+            
+            return unsubscribe;
+        } catch (error) {
+            console.error("Error loading user conversation from Firebase:", error);
+            return () => {};
         }
     };
 
@@ -270,22 +382,23 @@ export default function ChatPageUi() {
     // Update conversation in Firebase
     const updateConversationInFirebase = async (conversation: Conversation) => {
         try {
-        const convRef = doc(db, "conversations", conversation.id);
-        
-        const updateData = {
+            const convRef = doc(db, "conversations", conversation.id);
+            
+            const updateData = {
             lastMessage: conversation.lastMessage,
             lastMessageTime: Timestamp.fromDate(conversation.lastMessageTime),
             messages: conversation.messages.map(msg => ({
-            ...msg,
-            timestamp: Timestamp.fromDate(msg.timestamp)
+                ...msg,
+                timestamp: Timestamp.fromDate(msg.timestamp),
+                read: msg.read || false  // Ensure read status is preserved
             })),
-            unreadCount: conversation.unreadCount,
+            unreadCount: conversation.unreadCount,  // Keep the correct unread count
             updatedAt: serverTimestamp()
-        };
-        
-        await updateDoc(convRef, updateData);
+            };
+            
+            await updateDoc(convRef, updateData);
         } catch (error) {
-        console.error("Error updating conversation in Firebase:", error);
+            console.error("Error updating conversation in Firebase:", error);
         }
     };
 
@@ -293,17 +406,31 @@ export default function ChatPageUi() {
     const handleOwnerLogin = async () => {
         setAuthError('');
         try {
-        setIsLoading(true);
-        await signInWithEmailAndPassword(auth, ownerEmail, ownerPassword);
-        // onAuthStateChanged listener will handle the rest
-        setShowOwnerLogin(false);
-        setOwnerEmail('');
-        setOwnerPassword('');
+            setIsLoading(true);
+            await signInWithEmailAndPassword(auth, ownerEmail, ownerPassword);
+            // onAuthStateChanged listener will handle the rest
+            setShowOwnerLogin(false);
+            setOwnerEmail('');
+            setOwnerPassword('');
         } catch (error: any) {
-        console.error("Login error:", error);
-        setAuthError(error.message || 'Login failed. Please check your credentials.');
+            console.error("Login error:", error);
+            
+            // Better error messages for users
+            if (error.code === 'auth/invalid-credential') {
+                setAuthError('Invalid email or password. Please check your credentials.');
+            } else if (error.code === 'auth/user-not-found') {
+                setAuthError('No account found with this email.');
+            } else if (error.code === 'auth/wrong-password') {
+                setAuthError('Incorrect password. Please try again.');
+            } else if (error.code === 'auth/too-many-requests') {
+                setAuthError('Too many login attempts. Please try again later.');
+            } else if (error.code === 'auth/network-request-failed') {
+                setAuthError('Network error. Please check your internet connection.');
+            } else {
+                setAuthError('Login failed. Please try again.');
+            }
         } finally {
-        setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -324,8 +451,38 @@ export default function ChatPageUi() {
 
     // Scroll to bottom of messages
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({behavior: 'smooth' });
     }, [conversations, activeConversation]);
+
+    // mark messages as read when conversation is active
+    useEffect(() => {
+        if (activeConversation && !isOwner) {
+            // When user views the conversation, mark all messages as read
+            const conversation = conversations.find(conv => conv.id === activeConversation);
+            if (conversation && conversation.unreadCount > 0) {
+            const updatedConversations = conversations.map(conv => {
+                if (conv.id === activeConversation) {
+                const updatedConv = {
+                    ...conv,
+                    unreadCount: 0,  // Reset unread count
+                    messages: conv.messages.map(msg => ({
+                    ...msg,
+                    read: true  // Mark all messages as read
+                    }))
+                };
+                
+                // Update Firebase
+                updateConversationInFirebase(updatedConv);
+                
+                return updatedConv;
+                }
+                return conv;
+            });
+            
+            setConversations(updatedConversations);
+            }
+        }
+    }, [activeConversation, isOwner]);
 
     const sendMessage = async () => {
         if (!userMessage.trim() || !activeConversation) return;
@@ -375,29 +532,29 @@ export default function ChatPageUi() {
         if (!messageText.trim() || !activeConversation) return;
 
         const newMessage: Message = {
-        id: `owner_msg_${Date.now()}`,
-        text: messageText,
-        sender: 'owner',
-        timestamp: new Date(),
-        read: false
+            id: `owner_msg_${Date.now()}`,
+            text: messageText,
+            sender: 'owner',
+            timestamp: new Date(),
+            read: false
         };
 
         const updatedConversations = conversations.map(conv => {
-        if (conv.id === activeConversation) {
+            if (conv.id === activeConversation) {
             const updatedConv = {
-            ...conv,
-            lastMessage: messageText,
-            lastMessageTime: new Date(),
-            messages: [...conv.messages, newMessage],
-            unreadCount: 0
+                ...conv,
+                lastMessage: messageText,
+                lastMessageTime: new Date(),
+                messages: [...conv.messages, newMessage],
+                unreadCount: conv.unreadCount + 1  // FIXED: Increment when owner sends message
             };
             
             // Update in Firebase
             updateConversationInFirebase(updatedConv);
             
             return updatedConv;
-        }
-        return conv;
+            }
+            return conv;
         });
 
         setConversations(updatedConversations);
@@ -448,6 +605,8 @@ export default function ChatPageUi() {
         if (isOwner) return true;
         return conversation.userId === currentUserId;
     };
+
+
 
     // Show loading state
     if (isLoading) {
@@ -536,7 +695,7 @@ export default function ChatPageUi() {
                         className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 transition-all"
                     >
                         <FaLock className="text-blue-400" />
-                        <span>Access Owner Dashboard</span>
+                        <span>Access Admin Dashboard</span>
                     </button>
                     </div>
                 )}
@@ -546,364 +705,372 @@ export default function ChatPageUi() {
             {/* Owner Login Modal */}
             {showOwnerLogin && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                <div className="relative w-full max-w-md bg-gradient-to-br from-[#0f1425] to-[#0a0e1a] rounded-3xl border border-white/10 shadow-2xl p-8">
-                    <button
-                    onClick={() => setShowOwnerLogin(false)}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all"
-                    >
-                    <FaTimes />
-                    </button>
-                    
-                    <div className="text-center mb-6">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                        <FaKey className="text-2xl text-blue-400" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-2">CEO Access</h3>
-                    <p className="text-gray-400">Enter your Gmail credentials to access all conversations</p>
-                    </div>
+                    <div className="relative w-full max-w-md bg-gradient-to-br from-[#0f1425] to-[#0a0e1a] rounded-3xl border border-white/10 shadow-2xl p-8 pb-0">
+                        <button
+                            onClick={() => setShowOwnerLogin(false)}
+                            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                        >
+                            <FaTimes />
+                        </button>
+                        
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                                <FaKey className="text-2xl text-blue-400" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-2">CEO Access</h3>
+                            <p className="text-gray-400">Enter your Gmail credentials to access all conversations</p>
+                        </div>
 
-                    <div className="space-y-4">
-                    <div>
-                        <input
-                        type="email"
-                        value={ownerEmail}
-                        onChange={(e) => setOwnerEmail(e.target.value)}
-                        placeholder="CEO Email (Gmail)"
-                        className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50 mb-3"
-                        onKeyDown={(e) => e.key === 'Enter' && handleOwnerLogin()}
-                        />
-                        <input
-                        type="password"
-                        value={ownerPassword}
-                        onChange={(e) => setOwnerPassword(e.target.value)}
-                        placeholder="Enter password"
-                        className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50"
-                        onKeyDown={(e) => e.key === 'Enter' && handleOwnerLogin()}
-                        />
-                        {authError && (
-                        <p className="text-red-400 text-xs mt-2">{authError}</p>
-                        )}
-                        <p className="text-xs text-gray-400 mt-2">
-                        Use your registered Gmail and password
-                        </p>
+                        <div className="space-y-4">
+                            <div>
+                                <input
+                                type="email"
+                                value={ownerEmail}
+                                onChange={(e) => setOwnerEmail(e.target.value)}
+                                placeholder="CEO Email (Gmail)"
+                                className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50 mb-3"
+                                onKeyDown={(e) => e.key === 'Enter' && handleOwnerLogin()}
+                                />
+                                <input
+                                type="password"
+                                value={ownerPassword}
+                                onChange={(e) => setOwnerPassword(e.target.value)}
+                                placeholder="Enter password"
+                                className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50"
+                                onKeyDown={(e) => e.key === 'Enter' && handleOwnerLogin()}
+                                />
+                                {authError && (
+                                <p className="text-red-400 text-xs mt-2">{authError}</p>
+                                )}
+                                <p className="text-xs text-gray-400 mt-2">
+                                Use your registered Gmail and password
+                                </p>
+                            </div>
+                            
+                            <button
+                                onClick={handleOwnerLogin}
+                                disabled={isLoading}
+                                className={`w-full py-3 rounded-lg transition-transform ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'} bg-gradient-to-r from-blue-600 to-purple-600`}
+                            >
+                                {isLoading ? 'Logging in...' : 'Login as Owner'}
+                            </button>
+                        </div>
                     </div>
-                    
-                    <button
-                        onClick={handleOwnerLogin}
-                        disabled={isLoading}
-                        className={`w-full py-3 rounded-lg transition-transform ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'} bg-gradient-to-r from-blue-600 to-purple-600`}
-                    >
-                        {isLoading ? 'Logging in...' : 'Login as Owner'}
-                    </button>
-                    </div>
-                </div>
                 </div>
             )}
 
             {/* Main Chat Container */}
             <section className="relative max-w-7xl mx-auto px-4 md:px-6 pb-20 z-10">
+                <div className="pb-8" ref={messagesEndRef}/>
                 <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl overflow-hidden">
-                <div className="flex flex-col lg:flex-row h-full">
-                    
-                    {/* Conversations Sidebar - Always visible */}
-                    <div className="lg:w-1/3 border-r border-white/10">
-                    {/* Header */}
-                    <div className="p-4 border-b border-white/10">
-                        <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold">
-                            {isOwner ? 'All Conversations' : 'Your Chat'}
-                        </h2>
-                        {isOwner && (
-                            <span className="text-sm text-gray-400">
-                            {filteredConversations.length} active
-                            </span>
-                        )}
-                        </div>
+                    <div className="flex flex-col lg:flex-row h-full">
                         
-                        {/* Search - Only for owner */}
-                        {isOwner && (
-                        <div className="relative">
-                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input
-                            type="text"
-                            placeholder="Search conversations..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50"
-                            />
-                        </div>
-                        )}
-                    </div>
-
-                    {/* Conversations List */}
-                    <div className="overflow-y-auto h-[calc(70vh-80px)]">
-                        {filteredConversations.length === 0 ? (
-                        <div className="p-8 text-center text-gray-400">
-                            {isOwner ? (
-                            <>
-                                <FaUser className="text-4xl mx-auto mb-4 opacity-50" />
-                                <p>No conversations yet</p>
-                            </>
-                            ) : (
-                            <>
-                                <FaUser className="text-4xl mx-auto mb-4 opacity-50" />
-                                <p>Start a conversation</p>
-                                <button
-                                onClick={() => setIsUserFormVisible(true)}
-                                className="text-white mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105 transition-transform"
-                                >
-                                Start Chatting
-                                </button>
-                            </>
-                            )}
-                        </div>
-                        ) : (
-                        filteredConversations.map((conversation) => (
-                            <div
-                            key={conversation.id}
-                            onClick={() => {
-                                if (canViewConversation(conversation)) {
-                                setActiveConversation(conversation.id);
-                                } else if (!isOwner) {
-                                // Show login prompt for non-owners trying to access other conversations
-                                setShowOwnerLogin(true);
-                                }
-                            }}
-                            className={`p-4 border-b border-white/5 cursor-pointer transition-all hover:bg-white/5 ${
-                                activeConversation === conversation.id ? 'bg-white/10' : ''
-                            } ${
-                                !canViewConversation(conversation) ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                            >
-                            <div className="flex items-start gap-3">
-                                <div className="relative">
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                                    <FaUser className="text-lg" />
-                                </div>
-                                {conversation.unreadCount > 0 && (
-                                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-xs flex items-center justify-center">
-                                    {conversation.unreadCount}
-                                    </div>
-                                )}
-                                {!canViewConversation(conversation) && (
-                                    <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-                                    <FaLock className="text-xs" />
-                                    </div>
-                                )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start mb-1">
-                                    <h3 className="font-bold truncate">
-                                    {conversation.userName}
-                                    {!canViewConversation(conversation) && (
-                                        <span className="text-xs text-gray-400 ml-2">(Locked)</span>
-                                    )}
-                                    </h3>
-                                    <span className="text-xs text-gray-400">
-                                    {formatTime(conversation.lastMessageTime)}
+                        {/* Conversations Sidebar - Always visible */}
+                        <div className="lg:w-1/3 border-r border-white/10">
+                            {/* Header */}
+                            <div className="p-4 border-b border-white/10">
+                                <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-bold">
+                                    {isOwner ? 'All Conversations' : 'Your Chat'}
+                                </h2>
+                                {isOwner && (
+                                    <span className="text-sm text-gray-400">
+                                    {filteredConversations.length} active
                                     </span>
+                                )}
                                 </div>
-                                <p className="text-sm text-gray-400 truncate mb-1">
-                                    {conversation.lastMessage || 'No messages yet'}
-                                </p>
-                                <div className="flex items-center gap-2 text-xs text-gray-500">
-                                    <FaCalendarAlt />
-                                    <span>{formatDate(conversation.lastMessageTime)}</span>
-                                    {isOwner && (
+                                
+                                {/* Search - Only for owner */}
+                                {isOwner && (
+                                <div className="relative">
+                                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                    <input
+                                    type="text"
+                                    placeholder="Search conversations..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50"
+                                    />
+                                </div>
+                                )}
+                            </div>
+
+                            {/* Conversations List */}
+                            <div className="overflow-y-auto h-[calc(70vh-80px)]">
+                                {filteredConversations.length === 0 ? (
+                                <div className="p-8 text-center text-gray-400">
+                                    {isOwner ? (
                                     <>
-                                        <span>•</span>
-                                        <span>{conversation.userPhone}</span>
+                                        <FaUser className="text-4xl mx-auto mb-4 opacity-50" />
+                                        <p>No conversations yet</p>
+                                    </>
+                                    ) : (
+                                    <>
+                                        <FaUser className="text-4xl mx-auto mb-4 opacity-50" />
+                                        <p>Start a conversation</p>
+                                        <button
+                                        onClick={() => setIsUserFormVisible(true)}
+                                        className="text-white mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105 transition-transform"
+                                        >
+                                        Start Chatting
+                                        </button>
                                     </>
                                     )}
                                 </div>
-                                </div>
-                            </div>
-                            </div>
-                        ))
-                        )}
-                    </div>
-                    </div>
-
-                    {/* Chat Area */}
-                    <div className="lg:w-2/3 flex flex-col">
-                    {activeConversation && activeConv ? (
-                        <>
-                        {/* Chat Header */}
-                        <div className="p-4 border-b border-white/10 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                                <FaUser />
-                            </div>
-                            <div>
-                                <h3 className="font-bold">{activeConv.userName}</h3>
-                                {isOwner && (
-                                <div className="flex items-center gap-2 text-sm text-gray-400">
-                                    <FaPhone className="text-xs" />
-                                    <span>{activeConv.userPhone}</span>
-                                    <span>•</span>
-                                    <FaEnvelope className="text-xs" />
-                                    <span>{activeConv.userEmail}</span>
-                                </div>
+                                ) : (
+                                filteredConversations.map((conversation) => (
+                                    <div
+                                    key={conversation.id}
+                                    onClick={() => {
+                                        if (canViewConversation(conversation)) {
+                                        setActiveConversation(conversation.id);
+                                        } else if (!isOwner) {
+                                        // Show login prompt for non-owners trying to access other conversations
+                                        setShowOwnerLogin(true);
+                                        }
+                                    }}
+                                    className={`p-4 border-b border-white/5 cursor-pointer transition-all hover:bg-white/5 ${
+                                        activeConversation === conversation.id ? 'bg-white/10' : ''
+                                    } ${
+                                        !canViewConversation(conversation) ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                    >
+                                    <div className="flex items-start gap-3">
+                                        <div className="relative">
+                                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                                            <FaUser className="text-lg" />
+                                        </div>
+                                        {conversation.unreadCount > 0 && (
+                                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-xs flex items-center justify-center">
+                                            {conversation.unreadCount}
+                                            </div>
+                                        )}
+                                        {!canViewConversation(conversation) && (
+                                            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                                            <FaLock className="text-xs" />
+                                            </div>
+                                        )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h3 className="font-bold truncate">
+                                            {conversation.userName}
+                                            {!canViewConversation(conversation) && (
+                                                <span className="text-xs text-gray-400 ml-2">(Locked)</span>
+                                            )}
+                                            </h3>
+                                            <span className="text-xs text-gray-400">
+                                            {formatTime(conversation.lastMessageTime)}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-400 truncate mb-1">
+                                            {conversation.lastMessage || 'No messages yet'}
+                                        </p>
+                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                            <FaCalendarAlt />
+                                            <span>{formatDate(conversation.lastMessageTime)}</span>
+                                            {isOwner && (
+                                            <>
+                                                <span>•</span>
+                                                <span>{conversation.userPhone}</span>
+                                            </>
+                                            )}
+                                        </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                ))
                                 )}
-                            </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                            {isOwner && (
-                                <>
-                                <button 
-                                    onClick={() => window.location.href = `tel:${activeConv.userPhone}`}
-                                    className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all"
-                                >
-                                    <FaPhone />
-                                </button>
-                                <button 
-                                    onClick={() => window.location.href = `mailto:${activeConv.userEmail}`}
-                                    className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all"
-                                >
-                                    <FaEnvelope />
-                                </button>
-                                </>
-                            )}
                             </div>
                         </div>
 
-                        {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                            {activeConv.messages.length === 0 ? (
-                            <div className="text-center py-12 text-gray-400">
-                                <FaPaperPlane className="text-4xl mx-auto mb-4 opacity-50" />
-                                <p>No messages yet. Start the conversation!</p>
-                            </div>
-                            ) : (
-                            activeConv.messages.map((message) => (
-                                <div
-                                key={message.id}
-                                className={`flex ${message.sender === 'user' ? 'justify-start' : 'justify-end'}`}
-                                >
-                                <div
-                                    className={`max-w-[70%] rounded-2xl p-4 ${
-                                    message.sender === 'user'
-                                        ? 'bg-white/10 rounded-bl-none'
-                                        : 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-br-none'
-                                    }`}
-                                >
-                                    <p className="mb-1">{message.text}</p>
-                                    <div className="flex items-center justify-end gap-2 text-xs text-gray-400">
-                                    <span>{formatTime(message.timestamp)}</span>
-                                    {message.sender === 'owner' && (
-                                        message.read ? (
-                                        <FaCheckDouble className="text-blue-400" />
-                                        ) : (
-                                        <FaCheck />
-                                        )
+                        {/* Chat Area */}
+                        <div className="lg:w-2/3 flex flex-col">
+                            {activeConversation && activeConv ? (
+                                <>
+                                {/* Chat Header */}
+                                <div className="p-4 border-b border-white/10 flex items-center justify-between">                               
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                                            <FaUser />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold">{activeConv.userName}</h3>
+                                            {isOwner && (
+                                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                                                <FaPhone className="text-xs" />
+                                                <span>{activeConv.userPhone}</span>
+                                                <span>•</span>
+                                                <FaEnvelope className="text-xs" />
+                                                <span>{activeConv.userEmail}</span>
+                                            </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                    {isOwner && (
+                                        <>
+                                        <button 
+                                            onClick={() => window.location.href = `tel:${activeConv.userPhone}`}
+                                            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all"
+                                        >
+                                            <FaPhone />
+                                        </button>
+                                        <button 
+                                            onClick={() => window.location.href = `mailto:${activeConv.userEmail}`}
+                                            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all"
+                                        >
+                                            <FaEnvelope />
+                                        </button>
+                                        </>
                                     )}
                                     </div>
                                 </div>
-                                </div>
-                            ))
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
 
-                        {/* Message Input */}
-                        <div className="p-4 py-6 border-t border-white/10">
-                            {isOwner ? (
-                            <div className="flex gap-2">
-                                <input
-                                type="text"
-                                placeholder="Type your reply..."
-                                className="flex-1 px-4 py-4 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50"
-                                onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                    const input = e.target as HTMLInputElement;
-                                    if (input.value.trim()) {
-                                        sendOwnerMessage(input.value);
-                                        input.value = '';
-                                    }
-                                    }
-                                }}
-                                />
-                                <button 
-                                onClick={() => {
-                                    const input = document.querySelector('input[type="text"]') as HTMLInputElement;
-                                    if (input?.value.trim()) {
-                                    sendOwnerMessage(input.value);
-                                    input.value = '';
-                                    }
-                                }}
-                                className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105 transition-transform"
-                                >
-                                <FaPaperPlane />
-                                </button>
-                            </div>
+                                {/* Messages Area */}
+                                <div className="flex-1 overflow-y-auto p-4 space-y-4">                               
+                                    {activeConv.messages.length === 0 ? (
+                                        <div className="text-center py-12 text-gray-400">
+                                            <FaPaperPlane className="text-4xl mx-auto mb-4 opacity-50" />
+                                            <p>No messages yet. Start the conversation!</p>
+                                        </div>
+                                    ) : (
+                                        activeConv.messages.map((message) => (
+                                            <div
+                                                key={message.id}
+                                                className={`flex ${message.sender === 'user' ? 'justify-start' : 'justify-end'}`}
+                                                >
+                                                <div
+                                                    className={`max-w-[70%] rounded-2xl p-4 ${
+                                                    message.sender === 'user'
+                                                        ? 'bg-white/10 rounded-bl-none'
+                                                        : 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-br-none'
+                                                    }`}
+                                                >
+                                                    <p className="mb-1">{message.text}</p>
+                                                    <div className="flex items-center justify-end gap-2 text-xs text-gray-400">
+                                                    <span>{formatTime(message.timestamp)}</span>
+                                                    {message.sender === 'owner' && (
+                                                        message.read ? (
+                                                        <FaCheckDouble className="text-blue-400" />
+                                                        ) : (
+                                                        <FaCheck />
+                                                        )
+                                                    )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}                              
+                                </div>
+
+                                {/* Message Input */}
+                                <div className="p-4 py-6 border-t border-white/10">
+                                    {isOwner ? (
+                                        <div className="flex gap-2">
+                                            <input
+                                            type="text"
+                                            placeholder="Type your reply..."
+                                            className="flex-1 px-4 py-4 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                const input = e.target as HTMLInputElement;
+                                                if (input.value.trim()) {
+                                                    sendOwnerMessage(input.value);
+                                                    input.value = '';
+                                                }
+                                                }
+                                            }}
+                                            ref={(input) => {
+                                                // Store reference for the button click
+                                                if (input) {
+                                                (input as any).ownerInput = true;
+                                                }
+                                            }}
+                                            />
+                                            <button 
+                                            onClick={() => {
+                                                // Get the input in the same container
+                                                const input = document.querySelector('.flex.gap-2 input[type="text"]') as HTMLInputElement;
+                                                if (input?.value.trim()) {
+                                                sendOwnerMessage(input.value);
+                                                input.value = '';
+                                                }
+                                            }}
+                                            className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105 transition-transform"
+                                            >
+                                            <FaPaperPlane />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                    <div className="space-y-3">
+                                        <div className="flex gap-2">
+                                        <div className="flex-1 relative">
+                                            <textarea
+                                            value={userMessage}
+                                            onChange={(e) => setUserMessage(e.target.value)}
+                                            onKeyDown={handleKeyPress}
+                                            placeholder="Type your message..."
+                                            className="w-full px-4 py-3 pr-12 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50 resize-none"
+                                            rows={2}
+                                            />
+                                            <button
+                                            onClick={sendMessage}
+                                            disabled={!userMessage.trim()}
+                                            className={`absolute right-2 top-6 p-2 rounded-lg transition-all ${
+                                                userMessage.trim()
+                                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105'
+                                                : 'bg-white/10 opacity-50'
+                                            }`}
+                                            >
+                                            <FaPaperPlane />
+                                            </button>
+                                        </div>
+                                        </div>
+                                        <div className="text-xs text-gray-400 flex items-center gap-2">
+                                        <FaInfoCircle />
+                                        <span>Your messages are saved locally. The owner will see them when they check.</span>
+                                        </div>
+                                    </div>
+                                    )}
+                                    
+                                </div>
+                                </>
                             ) : (
-                            <div className="space-y-3">
-                                <div className="flex gap-2">
-                                <div className="flex-1 relative">
-                                    <textarea
-                                    value={userMessage}
-                                    onChange={(e) => setUserMessage(e.target.value)}
-                                    onKeyPress={handleKeyPress}
-                                    placeholder="Type your message..."
-                                    className="w-full px-4 py-3 pr-12 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50 resize-none"
-                                    rows={2}
-                                    />
+                                <div className="flex-1 flex items-center justify-center p-8">
+                                <div className="text-center">
+                                    <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
+                                    {isOwner ? (
+                                        <FaUserTie className="text-2xl" />
+                                    ) : (
+                                        <FaUser className="text-2xl" />
+                                    )}
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2">
+                                    {isOwner 
+                                        ? 'Select a Conversation' 
+                                        : 'Start a Conversation'
+                                    }
+                                    </h3>
+                                    <p className="text-gray-400 mb-6 max-w-md">
+                                    {isOwner 
+                                        ? 'Select a conversation from the sidebar to view messages and reply to clients.'
+                                        : 'Enter your details to start chatting with our property experts.'
+                                    }
+                                    </p>
+                                    {!isOwner && (
                                     <button
-                                    onClick={sendMessage}
-                                    disabled={!userMessage.trim()}
-                                    className={`absolute right-2 top-6 p-2 rounded-lg transition-all ${
-                                        userMessage.trim()
-                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105'
-                                        : 'bg-white/10 opacity-50'
-                                    }`}
+                                        onClick={() => setIsUserFormVisible(true)}
+                                        className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105 transition-transform"
                                     >
-                                    <FaPaperPlane />
+                                        Start Chatting
                                     </button>
+                                    )}
                                 </div>
                                 </div>
-                                <div className="text-xs text-gray-400 flex items-center gap-2">
-                                <FaInfoCircle />
-                                <span>Your messages are saved locally. The owner will see them when they check.</span>
-                                </div>
-                            </div>
                             )}
                         </div>
-                        </>
-                    ) : (
-                        <div className="flex-1 flex items-center justify-center p-8">
-                        <div className="text-center">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
-                            {isOwner ? (
-                                <FaUserTie className="text-2xl" />
-                            ) : (
-                                <FaUser className="text-2xl" />
-                            )}
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">
-                            {isOwner 
-                                ? 'Select a Conversation' 
-                                : 'Start a Conversation'
-                            }
-                            </h3>
-                            <p className="text-gray-400 mb-6 max-w-md">
-                            {isOwner 
-                                ? 'Select a conversation from the sidebar to view messages and reply to clients.'
-                                : 'Enter your details to start chatting with our property experts.'
-                            }
-                            </p>
-                            {!isOwner && (
-                            <button
-                                onClick={() => setIsUserFormVisible(true)}
-                                className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105 transition-transform"
-                            >
-                                Start Chatting
-                            </button>
-                            )}
-                        </div>
-                        </div>
-                    )}
                     </div>
-                </div>
                 </div>
 
                 {/* User Information Form (Modal) */}
