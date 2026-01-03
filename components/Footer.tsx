@@ -6,10 +6,14 @@ export default function FooterUi() {
             <div className="max-w-7xl mx-auto px-6 py-12">
                 <div className="flex flex-col md:flex-row justify-between items-center">
                     <div className="mb-8 md:mb-0">
-                    <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    <h3 className="text-center md:text-left text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                         Abidex Trading Nigeria Ltd
                     </h3>
-                    <p className="text-gray-400 mt-2">Redefining Luxury Living Worldwide</p>
+                    <p className="text-center md:text-left text-sm md:text-base text-gray-400 mt-2">Redefining Luxury Living Worldwide</p>
+                    <div className="text-center md:text-left">
+                        <small>Buying & selling of properties:</small><br />
+                        <small className="text-xs text-[gold]">House, Estates, Lands, Cars, & Lots More!</small>
+                    </div>
                     
                     <div className="flex gap-4 mt-6">
                         <div className="text-center">

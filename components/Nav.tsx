@@ -14,9 +14,9 @@ export default function Nav() {
                     <h1 className="text-right md:text-left text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                         Abidex
                     </h1>
-                    <p className="text-xs text-gray-300 tracking-wide uppercase">
+                    <small className="text-right md:text-left text-[8px] md:text-xs text-gray-300 tracking-wide uppercase">
                         Your Best Property Trading Partner &reg;
-                    </p>
+                    </small>
                 </div>
 
             </div>

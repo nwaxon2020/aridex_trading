@@ -99,11 +99,7 @@ export default function HomePageUi() {
               
               <span className="text-3xl md:text-5xl">Begin Here</span>
             </h1>
-            
-            <p className="mt-6 max-w-2xl text-xl md:text-2xl text-gray-300 font-light animate-fadeUp delay-200">
-              <span className="tracking-wide font-normal bg-[rgba(0,0,0,0.6)] p-2 rounded-lg text-xs md:text-sm">
-                Buying & selling of properties: House, Estates, Lands, Cars, & Lots More!
-              </span><br />
+            <p className="mt-2 max-w-2xl text-xl md:text-2xl text-gray-300 font-light animate-fadeUp delay-200">
               Where <span className="text-blue-300 font-semibold">Luxury</span> meets{' '}
               <span className="text-purple-300 font-semibold">Comfort</span> in premium global properties
             </p>
@@ -111,8 +107,8 @@ export default function HomePageUi() {
 
           {/* About us link */}
           <div className="flex gap-6 justify-center">
-            <div className="mt-8 text-center mx-auto mb-0"><Link href={"/about-us"} className="text-blue-300 underline hover:text-blue-500">About Us</Link></div>
-            <div className="mt-8 text-center mx-auto mb-0"><Link href={"/chat"} className="text-amber-300 underline hover:text-amber-500">Chat Us Now!</Link></div>
+            <div className="mt-4 text-center mx-auto mb-0"><Link href={"/about-us"} className="text-blue-300 underline hover:text-blue-500">About Us</Link></div>
+            <div className="mt-4 text-center mx-auto mb-0"><Link href={"/chat"} className="text-amber-300 underline hover:text-amber-500">Chat Us Now!</Link></div>
           </div>
         
           <div className="flex flex-col sm:flex-row gap-4 mt-2 animate-fadeUp delay-300">
@@ -141,12 +137,12 @@ export default function HomePageUi() {
       {/* FEATURED PROPERTIES PREVIEW */}
       <section className="relative max-w-7xl mx-auto px-6 py-20 z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 animate-fadeUp">
+          <h2 className="text-3xl md:text-5xl font-bold mb-2 animate-fadeUp">
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               Featured Properties
             </span>
           </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto animate-fadeUp delay-100">
+          <p className="text-sm text-gray-400 max-w-2xl mx-auto animate-fadeUp delay-100">
             Discover our exclusive collection of premium properties worldwide
           </p>
         </div>
@@ -155,7 +151,7 @@ export default function HomePageUi() {
           {properties.map((property, index) => (
             <div 
               key={index}
-              className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 animate-fadeUp"
+              className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-4 py-6 md:p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 animate-fadeUp"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
@@ -165,12 +161,12 @@ export default function HomePageUi() {
                 <div className="w-full h-48 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
                   <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
                 </div>
-                <h3 className="text-xl font-bold mb-2">{property.type}</h3>
-                <p className="text-gray-400 flex items-center gap-2 mb-3">
+                <h3 className="md:text-xl font-bold mb-2">{property.type}</h3>
+                <p className="text-sm md:text-base text-gray-400 flex items-center gap-2 mb-3">
                   <FaMapMarker className="text-blue-400" />
                   {property.location}
                 </p>
-                <p className="text-2xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text">
+                <p className="text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text">
                   {property.price}
                 </p>
               </div>
@@ -240,7 +236,7 @@ export default function HomePageUi() {
               {/* Contact Details */}
               <div className="group relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-pink-600 to-blue-600 rounded-3xl blur opacity-25 group-hover:opacity-75 transition duration-500"></div>
-                <div className="relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-8 backdrop-blur-md transition-all duration-300 hover:-translate-y-2">
+                <div className="relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] px-2 py-8 md:p-8 backdrop-blur-md transition-all duration-300 hover:-translate-y-2">
                   <div className="flex flex-col gap-6">
                     <a 
                       href={`tel:${phoneNumber}`}
@@ -281,14 +277,14 @@ export default function HomePageUi() {
 
         {/* SOCIAL CONNECTIONS - Enhanced */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-2 md:mb-4">
             <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
               Connect & Follow
             </span>
           </h2>
-          <p className="text-xl text-gray-400 mb-12">Join our growing community</p>
+          <p className="text-sm md:text-xl text-gray-400 mb-12">Join our growing community</p>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6 mb-8">
             {/* TikTok */}
             <SocialCard
               icon={<FaTiktok className="text-4xl" />}
@@ -343,12 +339,12 @@ export default function HomePageUi() {
               className="group relative block rounded-3xl overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-400 opacity-90 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative p-8 text-center">
+              <div className="relative py-4 md:p-8 text-center">
                 <div className="inline-flex p-4 rounded-2xl bg-white/20 mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <FaWhatsapp className="text-4xl" />
+                  <FaWhatsapp className="text-2xl md:text-4xl" />
                 </div>
-                <h3 className="text-2xl font-bold mb-2">Instant Support</h3>
-                <p className="text-lg mb-4">Chat directly with our property experts</p>
+                <h3 className="text-lg md:text-2xl font-bold mb-2">Instant Support</h3>
+                <p className="text-xs md:text-lg mb-4">Chat directly with our property experts</p>
                 <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-sm">
                   <span className="text-sm opacity-90">Click to WhatsApp</span>
                 </div>
@@ -373,15 +369,15 @@ function SocialCard({ icon, name, link, color, followers }: any) {
       className={`${name === "WhatsApp" ? "hidden md:block": "block" } group relative rounded-3xl overflow-hidden transition-all duration-500 hover:scale-105`}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-20 group-hover:opacity-30 transition-opacity`}></div>
-      <div className="relative border border-white/10 bg-white/5 p-8 text-center backdrop-blur-xl transition-all duration-300 group-hover:-translate-y-2">
-        <div className="mb-4 transform group-hover:scale-110 transition-transform duration-300">
-          {icon}
-        </div>
-        <h3 className="text-lg font-semibold mb-2">{name}</h3>
-        <p className="text-sm text-gray-400 mb-1">Follow Us</p>
-        {followers && (
-          <p className="text-xs text-gray-500">{followers} {name === "WhatsApp"? "" : "followers"}</p>
-        )}
+      <div className="relative border border-white/10 bg-white/5 p-4 md:p-8 text-center backdrop-blur-xl transition-all duration-300 group-hover:-translate-y-2">
+          <div className="mb-4 transform group-hover:scale-110 transition-transform duration-300">
+            {icon}
+          </div>
+          <h3 className="text-lg font-semibold mb-2">{name}</h3>
+          <p className="text-sm text-gray-400 mb-1">Follow Us</p>
+          {followers && (
+            <p className="text-xs text-gray-500">{followers} {name === "WhatsApp"? "" : "followers"}</p>
+          )}
       </div>
     </a>
   );
