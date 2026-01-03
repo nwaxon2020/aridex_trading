@@ -21,22 +21,47 @@ import {
 import { useState, useEffect } from "react";
 import FooterUi from "../components/Footer";
 import { useRouter } from "next/navigation";
+import { db } from '@/lib/firebaseconfig';
+import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
+
+// Firebase Constants
+const ABOUT_CONFIG_DOC_ID = 'about_config';
+const TEAM_COLLECTION = 'team_members';
+
+// Types
+interface TeamMember {
+  id?: string;
+  name: string;
+  role: string;
+  experience: string;
+  email: string;
+  phone: string;
+  imageUrl?: string;
+  order: number;
+}
+
+interface AboutConfig {
+  ownerName: string;
+  ownerTitle: string;
+  ownerQuote: string;
+  ownerImageUrl: string;
+  companyDescription?: string;
+  updatedAt: Date;
+}
 
 export default function AboutPageUi() {
     const [activeTab, setActiveTab] = useState('mission');
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+    const [aboutConfig, setAboutConfig] = useState<AboutConfig | null>(null);
+    const [loading, setLoading] = useState(true);
     const router = useRouter(); 
 
+    // Static data (unchanged)
     const stats = [
         { value: "13+", label: "Years Experience", icon: <FaTrophy className="text-yellow-400" /> },
         { value: "58+", label: "Properties Sold", icon: <FaHome className="text-blue-400" /> },
         { value: "5+", label: "Cities Covered", icon: <FaGlobeAmericas className="text-green-400" /> },
         { value: "98%", label: "Client Satisfaction", icon: <FaHeart className="text-pink-400" /> }
-    ];
-
-    const team = [
-        { name: "Adebayo Johnson", role: "CEO & Founder", experience: "13+ years", email: "abidextradingnigltd@gmail.com", phone: "+2349136552111" },
-        { name: "Nwachukwu Prince", role: "Head of Sales", experience: "8+ years", email: "princenwachukwu308@yahoo.com", phone: "+2347034632037" },
-        { name: "Mrs Felicia .A", role: "Legal Advisor", experience: "5+ years", email: "abidextradingnigltd@gmail.com", phone: "+2347082981639" },
     ];
 
     const values = [
@@ -69,6 +94,75 @@ export default function AboutPageUi() {
         { year: "2021", title: "500+ Properties Milestone", description: "Successfully sold over 500 properties" },
         { year: "2023", title: "Digital Transformation", description: "Launched online property management system" }
     ];
+
+    // Fetch data from Firebase
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch about config
+                const configDocRef = doc(db, 'config', ABOUT_CONFIG_DOC_ID);
+                const configDocSnap = await getDoc(configDocRef);
+                
+                if (configDocSnap.exists()) {
+                    setAboutConfig(configDocSnap.data() as AboutConfig);
+                } else {
+                    // Use default values if no config exists
+                    setAboutConfig({
+                        ownerName: "Adebayo Johnson",
+                        ownerTitle: "Founder & CEO",
+                        ownerQuote: "Building dreams, one property at a time",
+                        ownerImageUrl: "/ceo.jpeg",
+                        companyDescription: "We are more than just a property service company. We are your trusted partners in turning property dreams into reality, connecting premium buyers with exceptional properties Nationwide.",
+                        updatedAt: new Date()
+                    });
+                }
+                
+                // Fetch team members
+                const teamQuerySnapshot = await getDocs(collection(db, TEAM_COLLECTION));
+                const members = teamQuerySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })) as TeamMember[];
+                
+                // Sort by order
+                const sortedMembers = members.sort((a, b) => a.order - b.order);
+                setTeamMembers(sortedMembers);
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                // Use static data as fallback
+                setTeamMembers([
+                    { id: '1', name: "Adebayo Johnson", role: "CEO & Founder", experience: "13+ years", email: "abidextradingnigltd@gmail.com", phone: "+2349136552111", order: 0 },
+                    { id: '2', name: "Nwachukwu Prince", role: "Head of Sales", experience: "8+ years", email: "princenwachukwu308@yahoo.com", phone: "+2347034632037", order: 1 },
+                    { id: '3', name: "Mrs Felicia .A", role: "Legal Advisor", experience: "5+ years", email: "abidextradingnigltd@gmail.com", phone: "+2347082981639", order: 2 },
+                ]);
+                
+                setAboutConfig({
+                    ownerName: "Adebayo Johnson",
+                    ownerTitle: "Founder & CEO",
+                    ownerQuote: "Building dreams, one property at a time",
+                    ownerImageUrl: "/ceo.jpeg",
+                    companyDescription: "We are more than just a property service company. We are your trusted partners in turning property dreams into reality, connecting premium buyers with exceptional properties Nationwide.",
+                    updatedAt: new Date()
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <p className="text-gray-400">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="relative min-h-screen bg-gradient-to-b from-[#0a0e1a] via-[#0f1425] to-[#0a0e1a] text-white overflow-x-hidden">
@@ -123,16 +217,16 @@ export default function AboutPageUi() {
                         <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-lg opacity-50 animate-pulse"></div>
                         <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white/20">
                         <img
-                            src={"/ceo.jpeg"}
+                            src={aboutConfig?.ownerImageUrl || "/ceo.jpeg"}
                             alt="Owner"
                             className="w-full h-full object-cover"
                         />
                         </div>
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold">Adebayo Johnson</h3>
-                        <p className="text-gray-400 text-sm">Founder & CEO</p>
-                        <p className="text-sm text-blue-300">"Building dreams, one property at a time"</p>
+                        <h3 className="text-lg font-bold">{aboutConfig?.ownerName || "Adebayo Johnson"}</h3>
+                        <p className="text-gray-400 text-sm">{aboutConfig?.ownerTitle || "Founder & CEO"}</p>
+                        <p className="text-sm text-blue-300">"{aboutConfig?.ownerQuote || "Building dreams, one property at a time"}"</p>
                     </div>
                     </div>
                 </div>
@@ -149,7 +243,7 @@ export default function AboutPageUi() {
                     <div className="relative w-64 h-64 lg:w-80 lg:h-80 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 z-10"></div>
                     <img
-                        src={"/ceo.jpeg"}
+                        src={aboutConfig?.ownerImageUrl || "/ceo.jpeg"}
                         alt="Owner"
                         className="w-full h-full object-cover"
                     />
@@ -332,26 +426,36 @@ export default function AboutPageUi() {
                 </div>
 
                 <div className="flex flex-col md:flex-row justify-center items-center gap-6">
-                    {team.map((member, index) => (
+                    {teamMembers.map((member, index) => (
                     <div 
-                        key={index}
+                        key={member.id || index}
                         className="w-full group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20"
                     >
                         <div className="relative w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 border-2 border-white/20">
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20"></div>
-                        <div className="w-full h-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center">
-                            <span className="text-2xl font-bold">{member.name.charAt(0)}</span>
-                        </div>
+                        {member.imageUrl ? (
+                            <img 
+                                src={member.imageUrl} 
+                                alt={member.name}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <>
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20"></div>
+                            <div className="w-full h-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center">
+                                <span className="text-2xl font-bold">{member.name.charAt(0)}</span>
+                            </div>
+                            </>
+                        )}
                         </div>
                         <h3 className="text-xl font-bold text-center mb-1">{member.name}</h3>
                         <p className="text-blue-400 text-center mb-2">{member.role}</p>
                         <p className="text-gray-400 text-sm text-center mb-4">{member.experience} experience</p>
                         <div className="flex justify-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                            <a href={`tel:${member.phone}`} ><FaPhone className="text-xs" /></a>
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center hover:bg-blue-500/30 transition">
+                            <a href={`tel:${member.phone}`}><FaPhone className="text-xs" /></a>
                         </div>
-                        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
-                            <a href={`mailto:@${member.email}`}><FaEnvelope className="text-xs" /></a>
+                        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center hover:bg-purple-500/30 transition">
+                            <a href={`mailto:${member.email}`}><FaEnvelope className="text-xs" /></a>
                         </div>
                         </div>
                     </div>

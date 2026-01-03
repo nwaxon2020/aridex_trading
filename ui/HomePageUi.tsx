@@ -12,8 +12,8 @@ import {
   FaStar,
   FaBuilding,
 } from "react-icons/fa6";
-import { useEffect, useState } from "react";
-import { FaMapMarker, FaHome, FaGlobeAmericas} from "react-icons/fa"
+import { useEffect, useState, useRef } from "react";
+import { FaGlobeAmericas, FaHome, FaMapMarker, FaPlay, FaPause, FaTimes, FaInfoCircle } from "react-icons/fa"
 import Link from "next/link";
 
 //components
@@ -28,6 +28,13 @@ export default function HomePageUi() {
   const [appConfig, setAppConfig] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // State for video modal and description
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [videoPlaying, setVideoPlaying] = useState(true);
+  const [showDescription, setShowDescription] = useState<Record<string, boolean>>({});
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,6 +70,44 @@ export default function HomePageUi() {
       setLoading(false);
     }
   };
+
+  // Toggle description visibility
+  const toggleDescription = (propertyId: string) => {
+    setShowDescription(prev => ({
+      ...prev,
+      [propertyId]: !prev[propertyId]
+    }));
+  };
+
+  // Handle video play/pause
+  const handleVideoControl = () => {
+    if (videoRef.current) {
+      if (videoPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setVideoPlaying(!videoPlaying);
+    }
+  };
+
+  // Close video modal
+  const closeVideoModal = () => {
+    setVideoModalOpen(false);
+    setVideoPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+  };
+
+  // Auto-play video when modal opens
+  useState(() => {
+    if (videoModalOpen && videoRef.current) {
+      videoRef.current.play().catch(e => {
+        console.log("Auto-play prevented:", e);
+      });
+    }
+  });
 
   // Get data with fallback to defaults (matches your original hardcoded values)
   const phoneNumber = appConfig?.contactInfo?.phone || "+2347082981639";
@@ -180,7 +225,7 @@ export default function HomePageUi() {
       </section>
 
       {/* FEATURED PROPERTIES PREVIEW */}
-      <section className="relative max-w-7xl mx-auto px-4 md:px-6 py-20 z-10">
+      <section className="relative max-w-7xl mx-auto px-4 md:px-2 py-20 z-10">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-2 animate-fadeUp">
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -192,86 +237,199 @@ export default function HomePageUi() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
-          {properties.length > 0 ? 
-            // SORT BY MOST RECENT (using updatedAt timestamps)
-            properties
-              .slice()
-              .sort((a, b) => {
-                const timeA = a.updatedAt?.toMillis?.() || 0;
-                const timeB = b.updatedAt?.toMillis?.() || 0;
-                return timeB - timeA;
-              })
-              .map((property, index) => (
-              <div 
-                key={property.id || index}
-                className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-4 py-6 md:p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 animate-fadeUp"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <FaHome className="text-xl" />
+        <>
+          {/* Video Modal */}
+          {videoModalOpen && selectedVideo && (
+            <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+              <div className="relative w-full max-w-4xl mx-auto">
+                {/* Close Button */}
+                <button
+                  onClick={closeVideoModal}
+                  className="absolute -top-10 right-0 md:-right-10 z-10 p-3 bg-red-600 hover:bg-red-700 rounded-full transition-colors"
+                >
+                  <FaTimes className="text-xl" />
+                </button>
+                
+                {/* Video Player */}
+                <div className="relative rounded-2xl overflow-hidden bg-black">
+                  <video
+                    ref={videoRef}
+                    src={selectedVideo}
+                    autoPlay
+                    controls={false}
+                    className="w-full h-auto max-h-[80vh]"
+                    onPlay={() => setVideoPlaying(true)}
+                    onPause={() => setVideoPlaying(false)}
+                  />
+                  
+                  {/* Custom Controls */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
+                    <button
+                      onClick={handleVideoControl}
+                      className="p-3 bg-blue-600/80 hover:bg-blue-700/80 rounded-full backdrop-blur-sm transition-colors"
+                    >
+                      {videoPlaying ? <FaPause /> : <FaPlay />}
+                    </button>
+                  </div>
                 </div>
-                <div className="mb-6">
-                  <div className="w-full h-full max-h-100 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
-                    {property.imageUrl ? (
-                      <img 
-                        src={property.imageUrl} 
-                        alt={property.type}
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
+                
+                <p className="text-center text-gray-400 mt-4 text-sm">
+                  Click the {videoPlaying ? 'pause' : 'play'} button to control video
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+            {properties.length > 0 ? 
+              properties
+                .slice()
+                .sort((a, b) => {
+                  const timeA = a.updatedAt?.toMillis?.() || 0;
+                  const timeB = b.updatedAt?.toMillis?.() || 0;
+                  return timeB - timeA;
+                })
+                .map((property, index) => (
+                <div 
+                  key={property.id || index}
+                  className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-3  md:p-3 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 animate-fadeUp"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <FaHome className="text-xl" />
+                  </div>
+                  
+                  {/* Video Indicator */}
+                  {property.videoUrl && (
+                    <div className="absolute top-4 left-4 z-10">
+                      <div className="bg-purple-600/80 text-white p-2 rounded-full">
+                        <FaPlay className="text-xs" />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="mb-6">
+                    <div className="w-full h-full max-h-100 md:h-70 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
+                      {property.imageUrl ? (
+                        <img 
+                          src={property.imageUrl} 
+                          alt={property.type}
+                          className="w-full h-full object-contain md:object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
+                      )}
+                    </div>
+                    <h3 className=" font-bold mb-1">{property.type}</h3>
+                    <p className="text-sm text-gray-400 flex items-center gap-2 mb-3">
+                      <FaMapMarker className="text-blue-400" />
+                      {property.location}
+                    </p>
+                    <p className="text-xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text mb-2">
+                      ₦{property.price}
+                    </p>
+                    
+                    {/* Description Toggle */}
+                    {property.description && (
+                      <div className="mb-2">
+                        <button
+                          onClick={() => property.id && toggleDescription(property.id)}
+                          className="flex items-center gap-2 text-blue-300 hover:text-blue-200 transition-colors text-sm"
+                        >
+                          <FaInfoCircle className="text-xs" />
+                          <span>Description</span>
+                        </button>
+                        
+                        {/* Description Content */}
+                        {property.id && showDescription[property.id] && (
+                          <div className="mt-2 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50">
+                            <p className="text-sm text-gray-300">{property.description}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Property Details */}
+                    {(property.bedrooms || property.bathrooms || property.squareFeet) && (
+                      <div className="flex gap-4 mb-4 text-sm text-gray-400">
+                        {property.bedrooms && (
+                          <div className="flex items-center gap-1">
+                            <span>🛏️</span>
+                            <span>{property.bedrooms} bed</span>
+                          </div>
+                        )}
+                        {property.bathrooms && (
+                          <div className="flex items-center gap-1">
+                            <span>🚿</span>
+                            <span>{property.bathrooms} bath</span>
+                          </div>
+                        )}
+                        {property.squareFeet && (
+                          <div className="flex items-center gap-1">
+                            <span>📐</span>
+                            <span>{property.squareFeet} sq ft</span>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
-                  <h3 className="md:text-xl font-bold mb-2">{property.type}</h3>
-                  <p className="text-sm md:text-base text-gray-400 flex items-center gap-2 mb-3">
-                    <FaMapMarker className="text-blue-400" />
-                    {property.location}
-                  </p>
-                  <p className="text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text">
-                    ₦{property.price}
-                  </p>
+                  
+                  {/* View Video Button - Only show if video exists */}
+                  {property.videoUrl ? (
+                    <button 
+                      onClick={() => {
+                        setSelectedVideo(property.videoUrl || '');
+                        setVideoModalOpen(true);
+                        setVideoPlaying(true);
+                      }}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center justify-center gap-2 transition-all duration-300"
+                    >
+                      <FaPlay />
+                      View Video
+                    </button>
+                  ) : (
+                    <div className="w-full py-3 text-center text-gray-500 text-sm">
+                      No video available
+                    </div>
+                  )}
                 </div>
-                <button className="w-full py-3 rounded-xl border border-white/20 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:border-transparent transition-all duration-300">
-                  View Details
-                </button>
-              </div>
-            )) : (
-            // Fallback to original demo properties if Firebase is empty
-            [
-              { type: "Luxury Villa", location: "Lagos", price: "$850,000" },
-              { type: "Modern Apartment", location: "Abuja", price: "$420,000" },
-              { type: "Commercial Space", location: "Chicago", price: "$1.2M" },
-              { type: "Land Plot", location: "Ikenne", price: "$150,000" },
-            ].map((property, index) => (
-              <div 
-                key={index}
-                className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-4 py-6 md:p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 animate-fadeUp"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <FaHome className="text-xl" />
-                </div>
-                <div className="mb-6">
-                  <div className="w-full h-48 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
+              )) : (
+              // Fallback to original demo properties if Firebase is empty
+              [
+                { type: "Luxury Villa", location: "Lagos", price: "$850,000" },
+                { type: "Modern Apartment", location: "Abuja", price: "$420,000" },
+                { type: "Commercial Space", location: "Chicago", price: "$1.2M" },
+                { type: "Land Plot", location: "Ikenne", price: "$150,000" },
+              ].map((property, index) => (
+                <div 
+                  key={index}
+                  className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-4 py-6 md:p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 animate-fadeUp"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <FaHome className="text-xl" />
                   </div>
-                  <h3 className="md:text-xl font-bold mb-2">{property.type}</h3>
-                  <p className="text-sm md:text-base text-gray-400 flex items-center gap-2 mb-3">
-                    <FaMapMarker className="text-blue-400" />
-                    {property.location}
-                  </p>
-                  <p className="text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text">
-                    {property.price}
-                  </p>
+                  <div className="mb-6">
+                    <div className="w-full h-48 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
+                    </div>
+                    <h3 className="md:text-xl font-bold mb-2">{property.type}</h3>
+                    <p className="text-sm md:text-base text-gray-400 flex items-center gap-2 mb-3">
+                      <FaMapMarker className="text-blue-400" />
+                      {property.location}
+                    </p>
+                    <p className="text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text">
+                      {property.price}
+                    </p>
+                  </div>
+                  <div className="w-full py-3 text-center text-gray-500 text-sm">
+                    Add property to enable video
+                  </div>
                 </div>
-                <button className="w-full py-3 rounded-xl border border-white/20 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:border-transparent transition-all duration-300">
-                  View Details
-                </button>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        </>
 
         {/* CONTACT INFORMATION SECTION - Enhanced */}
         <div className="relative rounded-3xl overflow-hidden mb-20">

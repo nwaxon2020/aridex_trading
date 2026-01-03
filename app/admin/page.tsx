@@ -21,7 +21,7 @@ export default function AdminPage() {
                 </Link>
 
                 <Link
-                href="/admin/aboutPageDashbord"
+                href="/admin/aboutPageDashboard"
                 className="px-4 py-3 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/40 hover:to-purple-600/40 transition text-center"
                 >
                 About Dashboard
