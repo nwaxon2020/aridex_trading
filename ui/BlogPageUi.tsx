@@ -48,14 +48,6 @@ interface PropertyCardProps {
   likesCount: number;
 }
 
-interface SocialCardProps {
-  icon: React.ReactNode;
-  name: string;
-  link: string;
-  color: string;
-  followers: string;
-}
-
 export default function BlogPageUi() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -314,17 +306,17 @@ export default function BlogPageUi() {
                 </span>
                 </div>
                 
-                <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-2 animate-fadeUp">
+                <h1 className="text-3xl md:text-6xl font-bold tracking-tight mb-2 animate-fadeUp">
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                     Exclusive Properties
                 </span>
                 <br />
-                <span className="text-2xl md:text-3xl text-gray-300 font-light">
+                <span className="text-lg md:text-3xl text-gray-300 font-light">
                     Discover Your Dream Property
                 </span>
                 </h1>
                 
-                <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                <p className="text-sm md:text-xl text-gray-400 max-w-3xl mx-auto">
                     Browse through our curated collection of premium properties. Click the heart to like your favorites!
                 </p>
             </div>
@@ -336,9 +328,9 @@ export default function BlogPageUi() {
                 <Link href={"/chat"} className="text-amber-300 underline hover:text-amber-500">Chat Us Now!</Link>
             </div>
 
-            <div className="flex justify-center sm:flex-row gap-4 mt-2 animate-fadeUp delay-300">
+            <div className="flex flex-col justify-center md:flex-row gap-4 mt-2 animate-fadeUp delay-300">
                 
-                <Link href={"/"} className="flex gap-2 group relative px-18 md:px-20 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-sm font-semibold overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/30">
+                <Link href={"/"} className="flex justify-center gap-2 group relative py-4 md:px-20 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-sm font-semibold overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/30">
                 <FaHome className="text-xl z-10" />
                 <span className="relative z-10">Home</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -347,7 +339,7 @@ export default function BlogPageUi() {
                 {/* UPDATED: Schedule Consultation button now opens phone dialer */}
                 <a 
                 href={`tel:${phoneNumber}`}
-                className="group px-5 py-2 rounded-full border-2 border-white/30 text-sm font-semibold hover:bg-white/10 hover:border-white/50 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                className="group px-5 py-4 rounded-full border-2 border-white/30 text-sm font-semibold hover:bg-white/10 hover:border-white/50 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
                 >
                 <FaPhone className="group-hover:animate-pulse" />
                 Schedule Consultation
@@ -356,30 +348,30 @@ export default function BlogPageUi() {
         </section>
 
         {/* Properties Grid */}
-        <section className="mt-8 relative max-w-7xl mx-auto px-6 pb-20 z-10">
+        <section className="mt-8 relative max-w-7xl mx-auto px-3 md:px-6 pb-20 z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {properties.map((property) => (
-                <PropertyCard 
-                key={property.id}
-                property={property}
-                onClick={() => handlePropertyClick(property)}
-                isLiked={likedProperties.includes(property.id)}
-                onLike={(e) => handleLike(property.id, e)}
-                likesCount={propertiesLikes[property.id] || 0}
-                />
-            ))}
+              {properties.map((property) => (
+                  <PropertyCard 
+                    key={property.id}
+                    property={property}
+                    onClick={() => handlePropertyClick(property)}
+                    isLiked={likedProperties.includes(property.id)}
+                    onLike={(e) => handleLike(property.id, e)}
+                    likesCount={propertiesLikes[property.id] || 0}
+                  />
+              ))}
             </div>
         </section>
 
         {/* Property Detail Modal */}
         {selectedProperty && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#0f1425] to-[#0a0e1a] rounded-3xl border border-white/10 shadow-2xl">
+            <div className="fixed inset-0 z-50 flex items-center justify-center px-2 p-4 bg-black/80 backdrop-blur-sm">
+              <div className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#0f1425] to-[#0a0e1a] rounded-3xl border border-white/10 shadow-2xl">
                 
                 {/* Close Button */}
                 <button
                 onClick={closeModal}
-                className="absolute top-3 right-4 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
+                className="absolute top-2 right-4 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
                 >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -387,7 +379,7 @@ export default function BlogPageUi() {
                 </button>
 
                 {/* Main Content */}
-                <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
+                <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8 px-1 py-4 md:p-8">
                 
                 {/* Image Gallery */}
                 <div className="relative">
@@ -447,33 +439,33 @@ export default function BlogPageUi() {
 
                 {/* Property Details */}
                 <div className="space-y-6">
-                    <div>
+                  <div>
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-3xl font-bold">{selectedProperty.title}</h2>
+                        <h2 className="text-xl md:text-3xl font-bold">{selectedProperty.title}</h2>
                         <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-400">
-                            {propertiesLikes[selectedProperty.id] || 0} likes
-                        </span>
-                        <button
-                            onClick={(e) => handleLike(selectedProperty.id, e)}
-                            className={`p-3 rounded-full transition-all relative group ${
-                            likedProperties.includes(selectedProperty.id)
-                                ? 'bg-pink-500/20 text-pink-400'
-                                : 'bg-white/10 hover:bg-white/20'
-                            }`}
-                        >
-                            <FaHeart className={`${likedProperties.includes(selectedProperty.id) ? 'fill-pink-400' : ''}`} />
-                            <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-black/80 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                            {likedProperties.includes(selectedProperty.id) ? 'Unlike' : 'Like'}
-                            </div>
-                        </button>
+                          <span className="text-sm text-gray-400">
+                              {propertiesLikes[selectedProperty.id] || 0} likes
+                          </span>
+                          <button
+                              onClick={(e) => handleLike(selectedProperty.id, e)}
+                              className={`p-3 rounded-full transition-all relative group ${
+                              likedProperties.includes(selectedProperty.id)
+                                  ? 'bg-pink-500/20 text-pink-400'
+                                  : 'bg-white/10 hover:bg-white/20'
+                              }`}
+                          >
+                              <FaHeart className={`${likedProperties.includes(selectedProperty.id) ? 'fill-pink-400' : ''}`} />
+                              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-black/80 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                              {likedProperties.includes(selectedProperty.id) ? 'Unlike' : 'Like'}
+                              </div>
+                          </button>
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 text-gray-400 mb-4">
+                    <div className="text-sm md:text-base flex items-center gap-2 text-gray-400 mb-4">
                         <FaMapMarkerAlt className="text-blue-400" />
                         <span>{selectedProperty.location}</span>
-                        <span className={`px-3 py-1 rounded-full text-sm ${
+                        <span className={`px-3 py-1 rounded-full ${
                         selectedProperty.negotiable 
                             ? 'bg-green-500/20 text-green-400' 
                             : 'bg-yellow-500/20 text-yellow-400'
@@ -482,8 +474,8 @@ export default function BlogPageUi() {
                         </span>
                     </div>
 
-                    <p className="text-gray-300 mb-6">{selectedProperty.description}</p>
-                    </div>
+                    <p className="text-sm md:text-base text-gray-300 mb-6">{selectedProperty.description}</p>
+                  </div>
 
                     {/* Property Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl bg-white/5 backdrop-blur-sm">
@@ -492,7 +484,7 @@ export default function BlogPageUi() {
                         <FaBed className="text-blue-400" />
                         </div>
                         <p className="text-sm text-gray-400">Bedrooms</p>
-                        <p className="text-xl font-bold">{selectedProperty.bedrooms}</p>
+                        <p className="md:text-xl font-bold">{selectedProperty.bedrooms}</p>
                     </div>
                     
                     <div className="text-center">
@@ -500,83 +492,96 @@ export default function BlogPageUi() {
                         <FaBath className="text-purple-400" />
                         </div>
                         <p className="text-sm text-gray-400">Bathrooms</p>
-                        <p className="text-xl font-bold">{selectedProperty.bathrooms}</p>
+                        <p className="md:text-xl font-bold">{selectedProperty.bathrooms}</p>
                     </div>
                     
                     <div className="text-center">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-green-500/20 mb-2">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-green-500/20 mb-2">
                         <FaRulerCombined className="text-green-400" />
-                        </div>
-                        <p className="text-sm text-gray-400">Area</p>
-                        <p className="text-xl font-bold">{selectedProperty.area}</p>
+                      </div>
+                      <p className="text-sm text-gray-400">Area</p>
+                      <p className="md:text-xl font-bold">{selectedProperty.area}</p>
                     </div>
                     
                     <div className="text-center">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-pink-500/20 mb-2">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-pink-500/20 mb-2">
                         <FaCheckCircle className="text-pink-400" />
                         </div>
                         <p className="text-sm text-gray-400">Type</p>
-                        <p className="text-xl font-bold">{selectedProperty.type}</p>
-                    </div>
+                        <p className="md:text-xl font-bold">{selectedProperty.type}</p>
+                      </div>
                     </div>
 
                     {/* Features */}
-                    <div>
-                    <h3 className="text-xl font-bold mb-4">Features</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {selectedProperty.features.map((feature: string, index: number) => (
-                        <span 
-                            key={index}
-                            className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm"
-                        >
-                            {feature}
-                        </span>
-                        ))}
-                    </div>
+                    <div className="relative">
+                      <h3 className="text-xl font-bold mb-4">Features</h3>
+                      <div className="flex flex-wrap gap-2">
+                          {selectedProperty.features.map((feature: string, index: number) => (
+                          <span 
+                              key={index}
+                              className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm"
+                          >
+                              {feature}
+                          </span>
+                          ))}
+                      </div>
+
+                      {/* Chat Page Link */}
+                      <Link 
+                        href={"/chat"} 
+                        className="absolute top-22 right-2 flex justify-center items-center text-center bg-blue-800 border-3 border-white w-15 h-15 rounded-full p-2 overflow-hidden"
+                        scroll={false}  // Add this
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          closeModal(); // Make sure to close the modal first
+                        }}
+                      >
+                        <small className="text-xs text-blue-50">Chat Us Now!</small>
+                      </Link>
                     </div>
 
                     {/* Contact Buttons - Border Top */}
                     <div className="pt-6 border-t border-white/10">
-                    <div className="grid grid-cols-3 gap-4">
-                        <a
-                        href={`https://wa.me/${selectedProperty.contact.phone}?text=Hello,%20I%20am%20interested%20in%20${encodeURIComponent(selectedProperty.title)}%20(${selectedProperty.price})`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group relative flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 hover:border-green-400 transition-all duration-300"
-                        >
-                        <div className="p-3 rounded-xl bg-green-600/30 group-hover:scale-110 transition-transform duration-300 mb-2">
-                            <FaWhatsapp className="text-2xl text-green-400" />
-                        </div>
-                        <span className="text-sm font-medium">WhatsApp</span>
-                        <span className="text-xs text-gray-400">Quick Reply</span>
-                        </a>
+                      <div className="grid grid-cols-3 gap-3 md:gap-4">
+                          <a
+                            href={`https://wa.me/${selectedProperty.contact.phone}?text=Hello,%20I%20am%20interested%20in%20${encodeURIComponent(selectedProperty.title)}%20(${selectedProperty.price})`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group relative flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 hover:border-green-400 transition-all duration-300"
+                          >
+                          <div className="p-3 rounded-xl bg-green-600/30 group-hover:scale-110 transition-transform duration-300 mb-2">
+                              <FaWhatsapp className="text-2xl text-green-400" />
+                          </div>
+                          <span className="text-sm font-medium">WhatsApp</span>
+                          <span className="text-xs text-gray-400">Quick Reply</span>
+                          </a>
 
-                        <a
-                        href={`tel:${selectedProperty.contact.phone}`}
-                        className="group relative flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-400 transition-all duration-300"
-                        >
-                        <div className="p-3 rounded-xl bg-blue-600/30 group-hover:scale-110 transition-transform duration-300 mb-2">
-                            <FaPhone className="text-2xl text-blue-400" />
-                        </div>
-                        <span className="text-sm font-medium">Call Now</span>
-                        <span className="text-xs text-gray-400">Direct Call</span>
-                        </a>
+                          <a
+                          href={`tel:${selectedProperty.contact.phone}`}
+                          className="group relative flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-400 transition-all duration-300"
+                          >
+                          <div className="p-3 rounded-xl bg-blue-600/30 group-hover:scale-110 transition-transform duration-300 mb-2">
+                              <FaPhone className="text-2xl text-blue-400" />
+                          </div>
+                          <span className="text-sm font-medium">Call Now</span>
+                          <span className="text-xs text-gray-400">Direct Call</span>
+                          </a>
 
-                        <a
-                        href={`mailto:${selectedProperty.contact.email}?subject=Inquiry about ${encodeURIComponent(selectedProperty.title)}&body=Hello, I am interested in the ${selectedProperty.title} (${selectedProperty.price}) located in ${selectedProperty.location}.`}
-                        className="group relative flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-red-600/20 to-pink-600/20 border border-red-500/30 hover:border-red-400 transition-all duration-300"
-                        >
-                        <div className="p-3 rounded-xl bg-red-600/30 group-hover:scale-110 transition-transform duration-300 mb-2">
-                            <FaEnvelope className="text-2xl text-red-400" />
-                        </div>
-                        <span className="text-sm font-medium">Email</span>
-                        <span className="text-xs text-gray-400">Send Details</span>
-                        </a>
-                    </div>
+                          <a
+                          href={`mailto:${selectedProperty.contact.email}?subject=Inquiry about ${encodeURIComponent(selectedProperty.title)}&body=Hello, I am interested in the ${selectedProperty.title} (${selectedProperty.price}) located in ${selectedProperty.location}.`}
+                          className="group relative flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-red-600/20 to-pink-600/20 border border-red-500/30 hover:border-red-400 transition-all duration-300"
+                          >
+                          <div className="p-3 rounded-xl bg-red-600/30 group-hover:scale-110 transition-transform duration-300 mb-2">
+                              <FaEnvelope className="text-2xl text-red-400" />
+                          </div>
+                          <span className="text-sm font-medium">Email</span>
+                          <span className="text-xs text-gray-400">Send Details</span>
+                          </a>
+                      </div>             
                     </div>
                 </div>
                 </div>
-            </div>
+              </div>
             </div>
         )}
 
@@ -721,33 +726,10 @@ function PropertyCard({ property, onClick, isLiked, onLike, likesCount }: Proper
         {/* View Button */}
         <button className="w-full py-3 rounded-xl border border-white/20 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:border-transparent transition-all duration-300 flex items-center justify-center gap-2">
           <FaExpand />
-          View Details
+          View More!
         </button>
       </div>
     </div>
   );
 }
 
-/* ENHANCED SOCIAL CARD COMPONENT */
-function SocialCard({ icon, name, link, color, followers }: SocialCardProps) {
-  return (
-    <a
-      href={link}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`${name === "WhatsApp" ? "hidden md:block": "block" } group relative rounded-3xl overflow-hidden transition-all duration-500 hover:scale-105`}
-    >
-      <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-20 group-hover:opacity-30 transition-opacity`}></div>
-      <div className="relative border border-white/10 bg-white/5 p-8 text-center backdrop-blur-xl transition-all duration-300 group-hover:-translate-y-2">
-        <div className="mb-4 transform group-hover:scale-110 transition-transform duration-300">
-          {icon}
-        </div>
-        <h3 className="text-lg font-semibold mb-2">{name}</h3>
-        <p className="text-sm text-gray-400 mb-1">Follow Us</p>
-        {followers && (
-          <p className="text-xs text-gray-500">{followers} {name === "WhatsApp"? "" : "followers"}</p>
-        )}
-      </div>
-    </a>
-  );
-}

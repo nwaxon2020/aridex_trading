@@ -179,7 +179,6 @@ const ConfirmationModal = ({
 
 export default function ChatPageUi() {
     const router = useRouter();
-    const messagesEndRef = useRef<HTMLDivElement>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
     
     // User states
@@ -277,15 +276,6 @@ export default function ChatPageUi() {
         unsubscribe();
         };
     }, []);
-
-    // Scroll to bottom when messages change
-    useEffect(() => {
-        if (shouldScrollToBottom && messagesEndRef.current) {
-        console.log("Scrolling to bottom");
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        setShouldScrollToBottom(false);
-        }
-    }, [messages, shouldScrollToBottom]);
 
     // Load user data from localStorage for regular users
     const loadUserDataFromLocalStorage = () => {
@@ -471,6 +461,17 @@ export default function ChatPageUi() {
 
         return () => unsubscribe();
     }, [activeConversation]);
+
+    // Scroll to top when component mounts
+    useEffect(() => {
+
+        window.scrollTo(0, 0);
+        
+        // Also scroll the chat container to top
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = 0;
+        }
+    }, []);
 
     // Mark messages as read
     const markMessagesAsRead = async (conversationId: string, messagesList: Message[]) => {
@@ -842,7 +843,7 @@ export default function ChatPageUi() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#0a0e1a] via-[#0f1425] to-[#0a0e1a] text-white overflow-x-hidden">
+        <div className="min-h-screen bg-gradient-to-b from-[#0a0e1a] via-[#0f1425] to-[#0a0e1a] text-white">
         {/* Toast Notifications */}
         {toasts.map(toast => (
             <ToastNotification
@@ -1179,9 +1180,6 @@ export default function ChatPageUi() {
                         </button>
                         </div>
                     </div>
-
-                    {/* Scroll anchor - ONLY ONE */}
-                    <div className="hidden md:block" ref={messagesEndRef} />
 
                     {/* Messages Area - Scrollable container */}
                     <div 
