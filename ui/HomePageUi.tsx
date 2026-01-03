@@ -41,7 +41,7 @@ export default function HomePageUi() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0e1a] via-[#0f1425] to-[#0a0e1a] text-white overflow-x-hidden">
-      
+
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -91,18 +91,19 @@ export default function HomePageUi() {
               <span className="text-sm">Trusted Since 2010</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 animate-fadeUp">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-2 animate-fadeUp">
               <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Abidex Trading Nig. LTD
               </span>
               <br />
-              <span className="tracking-wide font-normal bg-[rgba(0,0,0,0.6)] p-2 rounded-lg text-xs md:text-sm">
-                Buying & selling of properties: House, Estates, Lands, Cars, & Lots More!
-              </span><br />
+              
               <span className="text-3xl md:text-5xl">Begin Here</span>
             </h1>
             
             <p className="mt-6 max-w-2xl text-xl md:text-2xl text-gray-300 font-light animate-fadeUp delay-200">
+              <span className="tracking-wide font-normal bg-[rgba(0,0,0,0.6)] p-2 rounded-lg text-xs md:text-sm">
+                Buying & selling of properties: House, Estates, Lands, Cars, & Lots More!
+              </span><br />
               Where <span className="text-blue-300 font-semibold">Luxury</span> meets{' '}
               <span className="text-purple-300 font-semibold">Comfort</span> in premium global properties
             </p>
