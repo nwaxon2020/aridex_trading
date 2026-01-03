@@ -226,7 +226,7 @@ export default function ChatPageUi() {
 
     // Add toast notification
     const addToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
-        const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
         setToasts(prev => [...prev, { id, message, type }]);
     };
 
@@ -518,8 +518,8 @@ export default function ChatPageUi() {
         setIsLoading(true);
         console.log("Starting new chat...");
         
-        const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const conversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+        const conversationId = `conv_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
         const convRef = doc(db, "conversations", conversationId);
         
         const userData = {
@@ -916,35 +916,35 @@ export default function ChatPageUi() {
 
             {/* Owner Status */}
             {isOwner ? (
-                <div className="flex justify-center items-center gap-4 mb-8">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-600/20 to-emerald-600/20">
-                    <FaShieldAlt className="text-green-400" />
-                    <span>Owner Mode</span>
-                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/20">
-                    {conversations.length} conversations
-                    </span>
-                    {totalUnreadCount > 0 && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-red-500 animate-pulse">
-                        {totalUnreadCount} unread
-                    </span>
-                    )}
-                </div>
-                <button
-                    onClick={handleOwnerLogout}
-                    className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all"
-                >
-                    Logout as Owner
-                </button>
+                <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-8">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-600/20 to-emerald-600/20">
+                        <FaShieldAlt className="text-green-400" />
+                        <span>Owner Mode</span>
+                        <span className="text-xs px-2 py-1 rounded-full bg-green-500/20">
+                        {conversations.length} conversations
+                        </span>
+                        {totalUnreadCount > 0 && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-red-500 animate-pulse">
+                            {totalUnreadCount} unread
+                        </span>
+                        )}
+                    </div>
+                    <button
+                        onClick={handleOwnerLogout}
+                        className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                    >
+                        Logout as Owner
+                    </button>
                 </div>
             ) : (
                 <div className="flex justify-center mb-8">
-                <button
-                    onClick={() => setShowOwnerLogin(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 transition-all"
-                >
-                    <FaLock className="text-blue-400" />
-                    <span>Access Admin Dashboard</span>
-                </button>
+                    <button
+                        onClick={() => setShowOwnerLogin(true)}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 transition-all"
+                    >
+                        <FaLock className="text-blue-400" />
+                        <span>Access Admin Dashboard</span>
+                    </button>
                 </div>
             )}
             </div>
@@ -1004,9 +1004,6 @@ export default function ChatPageUi() {
             </div>
         )}
         
-        {/* Scroll anchor - ONLY ONE */}
-        <div className="pb-3" ref={messagesEndRef} />
-
         {/* Main Chat Container */}
         <section className="relative max-w-7xl mx-auto px-4 md:px-6 pb-20 z-10">
             <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl overflow-hidden">
@@ -1183,6 +1180,9 @@ export default function ChatPageUi() {
                         </div>
                     </div>
 
+                    {/* Scroll anchor - ONLY ONE */}
+                    <div className="hidden md:block" ref={messagesEndRef} />
+
                     {/* Messages Area - Scrollable container */}
                     <div 
                         className="flex-1 overflow-y-auto p-4 space-y-4"
@@ -1277,6 +1277,7 @@ export default function ChatPageUi() {
                             : 'Start a Conversation'
                         }
                         </h3>
+
                         <p className="text-gray-400 mb-6 max-w-md">
                         {isOwner 
                             ? conversations.length === 0 

@@ -1,22 +1,10 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
-  theme: {
-    extend: {
-      animation: {
-        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
-        'float': 'float 3s ease-in-out infinite',
-        'shimmer': 'shimmer 2s infinite',
-      },
-      backdropFilter: {
-        'none': 'none',
-        'blur': 'blur(20px)',
-      },
-    },
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  reactStrictMode: true,
+  images: {
+    domains: [], // Add domains if you use Next.js Image component
   },
-  plugins: [],
-}
+};
+
+export default nextConfig;
