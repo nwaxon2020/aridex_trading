@@ -149,30 +149,30 @@ const ConfirmationModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-md bg-gradient-to-br from-[#0f1425] to-[#0a0e1a] rounded-3xl border border-white/10 shadow-2xl p-8 animate-scaleIn">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-red-500/20 to-rose-600/20 flex items-center justify-center mx-auto mb-4">
-            <FaExclamationCircle className="text-2xl text-red-400" />
-          </div>
-          <h3 className="font-bold mb-2">{title}</h3>
-          <p className="text-gray-400 text-xs">{message}</p>
-        </div>
+        <div className="relative w-full max-w-md bg-gradient-to-br from-[#0f1425] to-[#0a0e1a] rounded-3xl border border-white/10 shadow-2xl p-4 md:p-8 animate-scaleIn">
+            <div className="text-center mb-6">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-red-500/20 to-rose-600/20 flex items-center justify-center mx-auto mb-4">
+                <FaExclamationCircle className="text-2xl text-red-400" />
+            </div>
+            <h3 className="font-bold mb-2">{title}</h3>
+            <p className="text-gray-400 text-xs">{message}</p>
+            </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            className="flex-1 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 hover:scale-105 transition-transform"
-          >
-            {confirmText}
-          </button>
+            <div className="flex gap-3">
+            <button
+                onClick={onCancel}
+                className="text-sm md:text-base flex-1 px-1 md:px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all"
+            >
+                {cancelText}
+            </button>
+            <button
+                onClick={onConfirm}
+                className="text-sm md:text-base flex-1 px-1 md:px-6 py-3 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 hover:scale-105 transition-transform"
+            >
+                {confirmText}
+            </button>
+            </div>
         </div>
-      </div>
     </div>
   );
 };
@@ -847,23 +847,23 @@ export default function ChatPageUi() {
         {/* Toast Notifications */}
         {toasts.map(toast => (
             <ToastNotification
-            key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            onClose={() => removeToast(toast.id)}
+                key={toast.id}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => removeToast(toast.id)}
             />
         ))}
 
         {/* Confirmation Modal */}
         {confirmationModal && (
             <ConfirmationModal
-            isOpen={confirmationModal.isOpen}
-            title={confirmationModal.title}
-            message={confirmationModal.message}
-            confirmText={confirmationModal.confirmText}
-            cancelText={confirmationModal.cancelText}
-            onConfirm={confirmationModal.onConfirm}
-            onCancel={closeConfirmation}
+                isOpen={confirmationModal.isOpen}
+                title={confirmationModal.title}
+                message={confirmationModal.message}
+                confirmText={confirmationModal.confirmText}
+                cancelText={confirmationModal.cancelText}
+                onConfirm={confirmationModal.onConfirm}
+                onCancel={closeConfirmation}
             />
         )}
         
@@ -876,7 +876,7 @@ export default function ChatPageUi() {
                 router.push("/");
             }
             }}
-            className="cursor-pointer px-4 py-2 border text-gray-400 rounded-lg absolute top-24 md:top-2 right-6 z-50 hover:text-white hover:border-white transition"
+            className="cursor-pointer px-4 py-2 border text-gray-400 rounded-lg absolute top-24 md:top-2 right-6 hover:text-white hover:border-white transition"
         >
             ← Back
         </div>
@@ -901,13 +901,13 @@ export default function ChatPageUi() {
                 </a>
                 </div>
                 
-                <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-2 animate-fadeUp">
+                <h1 className="text-2xl md:text-6xl font-bold tracking-tight mb-2 animate-fadeUp">
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                     Chat Us Today
                 </span>
                 </h1>
                 
-                <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                <p className="text-sm md:text-xl text-gray-400 max-w-3xl mx-auto">
                 {isOwner 
                     ? `Owner Dashboard - ${conversations.length} conversations (${totalUnreadCount} unread)`
                     : 'Chat directly with our property experts. No sign-in required!'
@@ -938,10 +938,10 @@ export default function ChatPageUi() {
                     </button>
                 </div>
             ) : (
-                <div className="flex justify-center mb-8">
+                <div className="flex justify-center mb-4">
                     <button
                         onClick={() => setShowOwnerLogin(true)}
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 transition-all"
+                        className="text-sm md:text-base inline-flex items-center gap-2 px-6 py-2 md:py-3 rounded-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 transition-all"
                     >
                         <FaLock className="text-blue-400" />
                         <span>Access Admin Dashboard</span>
@@ -1006,7 +1006,7 @@ export default function ChatPageUi() {
         )}
         
         {/* Main Chat Container */}
-        <section className="relative max-w-7xl mx-auto px-4 md:px-6 pb-20 z-10">
+        <section className="relative max-w-7xl mx-auto px-4 md:px-6 pb-8 z-10">
             <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl overflow-hidden">
             <div className="flex flex-col lg:flex-row h-full">
                 
@@ -1040,7 +1040,7 @@ export default function ChatPageUi() {
                 </div>
 
                 {/* Conversations List */}
-                <div className="overflow-y-auto h-[calc(70vh-80px)]">
+                <div className="overflow-y-auto max-h-[calc(70vh-80px)]">
                     {filteredConversations.length === 0 ? (
                     <div className="p-8 text-center text-gray-400">
                         {isOwner ? (
@@ -1379,22 +1379,22 @@ export default function ChatPageUi() {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-4">
                     <FaUser className="text-blue-400" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">No Sign-up Required</h3>
-                <p className="text-gray-400">Start chatting instantly without creating an account</p>
+                <h3 className="md:text-xl font-bold mb-2">No Sign-up Required</h3>
+                <p className="text-sm text-gray-400">Start chatting instantly without creating an account</p>
                 </div>
                 <div className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-4">
                     <FaClock className="text-purple-400" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">24/7 Access</h3>
-                <p className="text-gray-400">Your conversations are saved and available anytime</p>
+                <h3 className="md:text-xl font-bold mb-2">24/7 Access</h3>
+                <p className="text-sm text-gray-400">Your conversations are saved and available anytime</p>
                 </div>
                 <div className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-blue-500/20 flex items-center justify-center mb-4">
                     <FaWhatsapp className="text-green-400" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Direct Owner Access</h3>
-                <p className="text-gray-400">Chat directly with the property experts</p>
+                <h3 className="md:text-xl font-bold mb-2">Direct Owner Access</h3>
+                <p className="text-sm text-gray-400">Chat directly with the property experts</p>
                 </div>
             </div>
             </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 export default function Nav() {
     return (
         <div className="bg-blue-300">
-            <div className="flex justify-between items-center z-80 px-8 py-3 bg-[rgba(0,0,0,0.7)]">
+            <div className="flex justify-between items-center z-80 px-4 md:px-8 py-3 bg-[rgba(0,0,0,0.7)]">
                 <Link href={"/"} className="w-14 h-14 md:w-20 md:h-20 rounded-full border-2 border-white overflow-hidden">
                     <img
                         src={"/abidex_logo.jpeg"}
