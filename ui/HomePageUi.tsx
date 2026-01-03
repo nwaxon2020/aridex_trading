@@ -14,30 +14,76 @@ import {
 } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import { FaMapMarker, FaHome, FaGlobeAmericas} from "react-icons/fa"
-
 import Link from "next/link";
 
 //components
 import FooterUi from "../components/Footer";
 
+// Firebase imports
+import { db } from '@/lib/firebaseconfig';
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+
 export default function HomePageUi() {
   const [scrollPosition, setScrollPosition] = useState(0);
-  const phoneNumber = "+2349136552111";
+  const [appConfig, setAppConfig] = useState<any>(null);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrollPosition(window.scrollY);
     };
     window.addEventListener('scroll', handleScroll);
+    
+    // Load data from Firebase
+    loadData();
+    
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const properties = [
-    { type: "Luxury Villa", location: "Lagos", price: "$850,000" },
-    { type: "Modern Apartment", location: "Abuja", price: "$420,000" },
-    { type: "Commercial Space", location: "Chicago", price: "$1.2M" },
-    { type: "Land Plot", location: "Ikenne", price: "$150,000" },
-  ];
+  const loadData = async () => {
+    try {
+      // Load app config
+      const configDoc = await getDoc(doc(db, 'config', 'app_config'));
+      if (configDoc.exists()) {
+        setAppConfig(configDoc.data());
+      }
+      
+      // Load properties
+      const propertiesSnapshot = await getDocs(collection(db, 'properties'));
+      const propertiesData = propertiesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      setProperties(propertiesData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get data with fallback to defaults (matches your original hardcoded values)
+  const phoneNumber = appConfig?.contactInfo?.phone || "+2347082981639";
+  const whatsappNumber = appConfig?.socialLinks?.whatsapp || "+2349136552111";
+  const email = appConfig?.contactInfo?.email || "abidextradingnigltd@gmail.com";
+  const whatsappMessage = appConfig?.contactInfo?.whatsappMessage || "Hello,%20I%20am%20interested%20in%20your%20property%20listings.";
+  const nigeriaAddress = appConfig?.contactInfo?.nigeriaAddress || "Ikenne modern market, block F, shop-8, Ogun State";
+  const usAddress = appConfig?.contactInfo?.usAddress || "8145 S Cole St, Illinois, Chicago";
+  const companyName = appConfig?.companyName || "Abidex Trading Nig. LTD";
+  const tagline = appConfig?.tagline || "Where Luxury meets Comfort in premium global properties";
+  const trustText = appConfig?.trustText || "Trusted Since 2010";
+  const heroImage = appConfig?.heroImage || "https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=2070";
+
+  // Social links with fallbacks (matches your original links)
+  const socialLinks = {
+    tiktok: appConfig?.socialLinks?.tiktok || "https://www.tiktok.com/@abidex.trading",
+    instagram: appConfig?.socialLinks?.instagram || "https://www.instagram.com/",
+    facebook: appConfig?.socialLinks?.facebook || "https://www.facebook.com/",
+    twitter: appConfig?.socialLinks?.twitter || "https://x.com/",
+    whatsapp: whatsappNumber,
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0e1a] via-[#0f1425] to-[#0a0e1a] text-white overflow-x-hidden">
@@ -58,7 +104,7 @@ export default function HomePageUi() {
           }}
         >
           <img
-            src="https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=2070"
+            src={heroImage}
             alt="Luxury Home"
             className="absolute inset-0 h-full w-full object-cover opacity-40"
           />
@@ -88,20 +134,19 @@ export default function HomePageUi() {
           <div className="mb-8">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4 animate-fadeIn">
               <FaStar className="text-yellow-400 animate-spin-slow" />
-              <span className="text-sm">Trusted Since 2010</span>
+              <span className="text-sm">{trustText}</span>
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-2 animate-fadeUp">
               <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Abidex Trading Nig. LTD
+                {companyName}
               </span>
               <br />
               
               <span className="text-3xl md:text-5xl">Begin Here</span>
             </h1>
             <p className="mt-2 max-w-2xl text-xl md:text-2xl text-gray-300 font-light animate-fadeUp delay-200">
-              Where <span className="text-blue-300 font-semibold">Luxury</span> meets{' '}
-              <span className="text-purple-300 font-semibold">Comfort</span> in premium global properties
+              {tagline}
             </p>
           </div>
 
@@ -135,7 +180,7 @@ export default function HomePageUi() {
       </section>
 
       {/* FEATURED PROPERTIES PREVIEW */}
-      <section className="relative max-w-7xl mx-auto px-6 py-20 z-10">
+      <section className="relative max-w-7xl mx-auto px-4 md:px-6 py-20 z-10">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-2 animate-fadeUp">
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -148,33 +193,84 @@ export default function HomePageUi() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
-          {properties.map((property, index) => (
-            <div 
-              key={index}
-              className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-4 py-6 md:p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 animate-fadeUp"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <FaHome className="text-xl" />
-              </div>
-              <div className="mb-6">
-                <div className="w-full h-48 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
-                  <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
+          {properties.length > 0 ? 
+            // SORT BY MOST RECENT (using updatedAt timestamps)
+            properties
+              .slice()
+              .sort((a, b) => {
+                const timeA = a.updatedAt?.toMillis?.() || 0;
+                const timeB = b.updatedAt?.toMillis?.() || 0;
+                return timeB - timeA;
+              })
+              .map((property, index) => (
+              <div 
+                key={property.id || index}
+                className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-4 py-6 md:p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 animate-fadeUp"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <FaHome className="text-xl" />
                 </div>
-                <h3 className="md:text-xl font-bold mb-2">{property.type}</h3>
-                <p className="text-sm md:text-base text-gray-400 flex items-center gap-2 mb-3">
-                  <FaMapMarker className="text-blue-400" />
-                  {property.location}
-                </p>
-                <p className="text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text">
-                  {property.price}
-                </p>
+                <div className="mb-6">
+                  <div className="w-full h-full max-h-100 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
+                    {property.imageUrl ? (
+                      <img 
+                        src={property.imageUrl} 
+                        alt={property.type}
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
+                    )}
+                  </div>
+                  <h3 className="md:text-xl font-bold mb-2">{property.type}</h3>
+                  <p className="text-sm md:text-base text-gray-400 flex items-center gap-2 mb-3">
+                    <FaMapMarker className="text-blue-400" />
+                    {property.location}
+                  </p>
+                  <p className="text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text">
+                    ₦{property.price}
+                  </p>
+                </div>
+                <button className="w-full py-3 rounded-xl border border-white/20 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:border-transparent transition-all duration-300">
+                  View Details
+                </button>
               </div>
-              <button className="w-full py-3 rounded-xl border border-white/20 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:border-transparent transition-all duration-300">
-                View Details
-              </button>
-            </div>
-          ))}
+            )) : (
+            // Fallback to original demo properties if Firebase is empty
+            [
+              { type: "Luxury Villa", location: "Lagos", price: "$850,000" },
+              { type: "Modern Apartment", location: "Abuja", price: "$420,000" },
+              { type: "Commercial Space", location: "Chicago", price: "$1.2M" },
+              { type: "Land Plot", location: "Ikenne", price: "$150,000" },
+            ].map((property, index) => (
+              <div 
+                key={index}
+                className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-4 py-6 md:p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 animate-fadeUp"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <FaHome className="text-xl" />
+                </div>
+                <div className="mb-6">
+                  <div className="w-full h-48 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
+                  </div>
+                  <h3 className="md:text-xl font-bold mb-2">{property.type}</h3>
+                  <p className="text-sm md:text-base text-gray-400 flex items-center gap-2 mb-3">
+                    <FaMapMarker className="text-blue-400" />
+                    {property.location}
+                  </p>
+                  <p className="text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text">
+                    {property.price}
+                  </p>
+                </div>
+                <button className="w-full py-3 rounded-xl border border-white/20 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:border-transparent transition-all duration-300">
+                  View Details
+                </button>
+              </div>
+            ))
+          )}
         </div>
 
         {/* CONTACT INFORMATION SECTION - Enhanced */}
@@ -192,7 +288,7 @@ export default function HomePageUi() {
               <div className="group relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur opacity-25 group-hover:opacity-75 transition duration-500"></div>
                 <a 
-                  href="https://maps.google.com/?q=Ikenne+modern+market,+block+F,+shop-8,+Ogun+State" 
+                  href={`https://maps.google.com/?q=${encodeURIComponent(nigeriaAddress)}`}
                   target="_blank"
                   className="relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-8 text-center backdrop-blur-md transition-all duration-300 hover:-translate-y-2 block cursor-pointer"
                 >
@@ -204,8 +300,7 @@ export default function HomePageUi() {
                     Nigeria Office
                   </h3>
                   <p className="text-gray-300 text-sm md:text-base leading-relaxed group-hover:text-blue-300 transition">
-                    Ikenne modern market, block F,<br /> shop-8, 
-                    Ogun State
+                    {nigeriaAddress}
                     <span className="block text-xs text-blue-400 mt-2">Click for directions →</span>
                   </p>
                 </a>
@@ -215,7 +310,7 @@ export default function HomePageUi() {
               <div className="group relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl blur opacity-25 group-hover:opacity-75 transition duration-500"></div>
                 <a 
-                  href="https://maps.google.com/?q=8145+S+Cole+St,+Chicago,+Illinois" 
+                  href={`https://maps.google.com/?q=${encodeURIComponent(usAddress)}`}
                   target="_blank"
                   className="relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-8 text-center backdrop-blur-md transition-all duration-300 hover:-translate-y-2 block cursor-pointer"
                 >
@@ -227,7 +322,7 @@ export default function HomePageUi() {
                     US Office
                   </h3>
                   <p className="text-gray-300 text-sm md:text-base leading-relaxed group-hover:text-purple-300 transition">
-                    8145 S Cole St,<br />Illinois, Chicago
+                    {usAddress}
                     <span className="block text-xs text-purple-400 mt-2">Click for directions →</span>
                   </p>
                 </a>
@@ -248,13 +343,13 @@ export default function HomePageUi() {
                       <div className="text-left">
                         <p className="text-sm text-gray-400">Phone / WhatsApp</p>
                         <p className="font-bold group-hover/call:text-green-300 transition">
-                          09136552111
+                          {phoneNumber.replace('+', '')}
                         </p>
                       </div>
                     </a>
                     
                     <a 
-                      href="mailto:abidextradingnigltd@gmail.com" 
+                      href={`mailto:${email}`}
                       className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-red-500/10 to-pink-500/10 hover:from-red-500/20 hover:to-pink-500/20 transition-all duration-300 group/email"
                     >
                       <div className="p-1 rounded-xl bg-gradient-to-br from-red-500 to-pink-500">
@@ -263,7 +358,7 @@ export default function HomePageUi() {
                       <div className="text-left">
                         <p className="text-sm text-gray-400">Email</p>
                         <p className="text-sm font-bold group-hover/email:text-red-300 transition">
-                          abidextradingnigltd@gmail.com
+                          {email}
                         </p>
                       </div>
                     </a>
@@ -289,7 +384,7 @@ export default function HomePageUi() {
             <SocialCard
               icon={<FaTiktok className="text-4xl" />}
               name="TikTok"
-              link="https://www.tiktok.com/@abidex.trading"
+              link={socialLinks.tiktok}
               color="from-pink-500 to-rose-500"
               followers="10K+"
             />
@@ -298,7 +393,7 @@ export default function HomePageUi() {
             <SocialCard
               icon={<FaInstagram className="text-4xl" />}
               name="Instagram"
-              link="https://www.instagram.com/"
+              link={socialLinks.instagram}
               color="from-purple-500 to-pink-500"
               followers="25K+"
             />
@@ -307,7 +402,7 @@ export default function HomePageUi() {
             <SocialCard
               icon={<FaFacebookF className="text-4xl" />}
               name="Facebook"
-              link="https://www.facebook.com/"
+              link={socialLinks.facebook}
               color="from-blue-500 to-cyan-500"
               followers="15K+"
             />
@@ -316,16 +411,16 @@ export default function HomePageUi() {
             <SocialCard
               icon={<FaXTwitter className="text-4xl" />}
               name="Twitter"
-              link="https://x.com/"
+              link={socialLinks.twitter}
               color="from-gray-600 to-gray-400"
               followers="8K+"
             />
 
-            {/* WhatsAapp desktop view*/}
+            {/* WhatsApp desktop view*/}
             <SocialCard
               icon={<FaWhatsapp className="text-4xl" />}
               name="WhatsApp"
-              link="https://wa.me/2349136552111?text=Hello,%20I%20am%20interested%20in%20your%20property%20listings."
+              link={`https://wa.me/${whatsappNumber.replace('+', '')}?text=${whatsappMessage}`}
               color="from-green-600 to-green-400"
               followers="Available 24/7"
             />
@@ -334,7 +429,7 @@ export default function HomePageUi() {
           {/* WhatsApp - Premium Card mobile view*/}
           <div className="md:hidden mx-auto">
             <a
-              href="https://wa.me/2349136552111?text=Hello,%20I%20am%20interested%20in%20your%20property%20listings."
+              href={`https://wa.me/${whatsappNumber.replace('+', '')}?text=${whatsappMessage}`}
               target="_blank"
               className="group relative block rounded-3xl overflow-hidden"
             >
