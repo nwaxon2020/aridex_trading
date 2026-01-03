@@ -15,7 +15,7 @@ import {
   FaFacebookF,
   FaInstagram,
   FaTwitter,
-  FaLinkedin,
+  FaTiktok,
   FaWhatsapp
 } from "react-icons/fa";
 import { useState, useEffect } from "react";
@@ -213,13 +213,13 @@ export default function AboutPageUi() {
                     Our Vision & Values
                 </span>
                 </h2>
-                <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                <p className="md:text-xl text-gray-400 max-w-3xl mx-auto">
                 Guiding principles that define who we are and how we serve our clients
                 </p>
             </div>
 
             {/* Tabs */}
-            <div className="flex flex-wrap justify-center gap-2 mb-12">
+            <div className="flex flex-wrap justify-center gap-3 mb-12">
                 <button
                 onClick={() => setActiveTab('mission')}
                 className={`px-6 py-3 rounded-full transition-all duration-300 ${
@@ -258,13 +258,13 @@ export default function AboutPageUi() {
                 <div className="relative backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12">
                 {activeTab === 'mission' && (
                     <div className="space-y-6">
-                    <div className="flex items-start gap-4">
+                    <div className="flex flex-col md:flex-row items-start gap-4">
                         <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20">
                         <FaChartLine className="text-2xl text-blue-400" />
                         </div>
                         <div>
                         <h3 className="text-2xl font-bold mb-2">Our Mission</h3>
-                        <p className="text-gray-300 text-lg">
+                        <p className="text-sm md:text-base text-gray-300 text-lg">
                             To provide exceptional services that exceed client expectations, 
                             leveraging our expertise and global network to deliver premium properties 
                             with integrity, transparency, and unmatched value.
@@ -276,13 +276,13 @@ export default function AboutPageUi() {
 
                 {activeTab === 'vision' && (
                     <div className="space-y-6">
-                    <div className="flex items-start gap-4">
+                    <div className="flex flex-col md:flex-row items-start gap-4">
                         <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20">
                         <FaGlobeAmericas className="text-2xl text-purple-400" />
                         </div>
                         <div>
                         <h3 className="text-2xl font-bold mb-2">Our Vision</h3>
-                        <p className="text-gray-300 text-lg">
+                        <p className="text-sm md:text-base text-gray-300 text-lg">
                             To become Nigeria's most trusted and innovative properties partner, 
                             expanding our global footprint while maintaining our commitment to 
                             excellence and customer satisfaction in every market we serve.
@@ -305,7 +305,7 @@ export default function AboutPageUi() {
                             </div>
                             <div>
                             <h3 className="text-xl font-bold mb-2">{value.title}</h3>
-                            <p className="text-gray-400">{value.description}</p>
+                            <p className="text-sm md:text-base text-gray-400">{value.description}</p>
                             </div>
                         </div>
                         </div>
@@ -326,7 +326,7 @@ export default function AboutPageUi() {
                         Meet Our Leadership
                     </span>
                     </h2>
-                    <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                    <p className="md:text-xl text-gray-400 max-w-3xl mx-auto">
                     The dedicated professionals behind our success story
                     </p>
                 </div>
@@ -361,74 +361,74 @@ export default function AboutPageUi() {
         </section>
 
         {/* Journey Timeline */}
-        <section className="relative py-16 px-6">
+        <section className="relative py-16 p-2 md:px-6">
             <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                    Our Journey
-                </span>
-                </h2>
-                <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-                Milestones in our growth and expansion story
-                </p>
-            </div>
-
-            <div className="relative">
-                {/* Timeline Line */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-blue-500 to-purple-500"></div>
-                
-                <div className="space-y-12">
-                {milestones.map((milestone, index) => (
-                    <div 
-                    key={index}
-                    className={`relative flex items-center ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
-                    >
-                    {/* Timeline Node */}
-                    <div className={`absolute left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 border-4 border-[#0a0e1a] z-10`}></div>
-                    
-                    {/* Content */}
-                    <div className={`w-5/12 ${index % 2 === 0 ? 'pr-12 text-right' : 'pl-12'}`}>
-                        <div className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50">
-                        <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
-                            {milestone.year}
-                        </div>
-                        <h3 className="text-xl font-bold mb-2">{milestone.title}</h3>
-                        <p className="text-gray-400">{milestone.description}</p>
-                        </div>
-                    </div>
-                    </div>
-                ))}
+                <div className="text-center mb-12">
+                    <h2 className="text-xl md:text-4xl font-bold mb-4">
+                    <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        Our Journey
+                    </span>
+                    </h2>
+                    <p className="md:text-xl text-gray-400 max-w-3xl mx-auto">
+                    Milestones in our growth and expansion story
+                    </p>
                 </div>
-            </div>
+
+                <div className="relative">
+                    {/* Timeline Line */}
+                    <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-blue-500 to-purple-500"></div>
+                    
+                    <div className="space-y-12">
+                        {milestones.map((milestone, index) => (
+                            <div 
+                                key={index}
+                                className={`m-2 relative flex items-center ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
+                            >
+                            {/* Timeline Node */}
+                            <div className={`absolute left-2/4 transform -translate-x-1/2 w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 border-4 border-[#0a0e1a] z-10`}></div>
+                            
+                            {/* Content */}
+                            <div className={`w-6/12 ${index % 2 === 0 ? 'pr-4 text-right' : 'pl-4'}`}>
+                                <div className="group relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-3 md:p-6 backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-blue-500/50">
+                                <div className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+                                    {milestone.year}
+                                </div>
+                                <h3 className="md:text-xl font-bold mb-2">{milestone.title}</h3>
+                                <p className="text-sm md:text-base text-gray-400">{milestone.description}</p>
+                                </div>
+                            </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         </section>
 
         {/* CTA Section */}
-        <section className="relative py-16 px-6">
+        <section className="relative py-16 px-3 md:px-6">
             <div className="max-w-7xl mx-auto">
             <div className="relative rounded-3xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20"></div>
                 <div className="relative backdrop-blur-xl border border-white/10 rounded-3xl p-12 text-center">
-                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                <h2 className="text-2xl md:text-4xl font-bold mb-6">
                     <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                     Ready to Find Your Dream Property?
                     </span>
                 </h2>
-                <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                <p className="md:text-xl text-gray-300 mb-4 md:mb-8 max-w-2xl mx-auto">
                     Join thousands of satisfied clients who have found their perfect property with us
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
                     href="tel:+2349136552111"
-                    className="group px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-lg font-semibold overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/30 flex items-center justify-center gap-2"
+                    className="text-sm md:text-base group px-1 md:px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-lg font-semibold overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/30 flex items-center justify-center gap-2"
                     >
                     <FaPhone className="group-hover:animate-pulse" />
                     Schedule Consultation
                     </a>
                     <a
                     href="mailto:abidextradingnigltd@gmail.com"
-                    className="group px-8 py-4 rounded-full border-2 border-white/30 text-lg font-semibold hover:bg-white/10 hover:border-white/50 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                    className="text-sm md:text-base group px-8 py-4 rounded-full border-2 border-white/30 text-lg font-semibold hover:bg-white/10 hover:border-white/50 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
                     >
                     <FaEnvelope />
                     Email Us
@@ -437,17 +437,17 @@ export default function AboutPageUi() {
                 
                 {/* Social Links */}
                 <div className="flex justify-center gap-4 mt-8">
-                    <a href="#" className="p-3 rounded-full bg-white/10 hover:bg-blue-500/20 transition-all duration-300">
+                    <a href="https://www.facebook.com/" className="p-3 rounded-full bg-white/10 hover:bg-blue-500/20 transition-all duration-300">
                     <FaFacebookF className="text-blue-400" />
                     </a>
-                    <a href="#" className="p-3 rounded-full bg-white/10 hover:bg-pink-500/20 transition-all duration-300">
+                    <a href="https://www.instagram.com/" className="p-3 rounded-full bg-white/10 hover:bg-pink-500/20 transition-all duration-300">
                     <FaInstagram className="text-pink-400" />
                     </a>
-                    <a href="#" className="p-3 rounded-full bg-white/10 hover:bg-gray-500/20 transition-all duration-300">
+                    <a href="https://x.com/" className="p-3 rounded-full bg-white/10 hover:bg-gray-500/20 transition-all duration-300">
                     <FaTwitter className="text-gray-300" />
                     </a>
-                    <a href="#" className="p-3 rounded-full bg-white/10 hover:bg-blue-600/20 transition-all duration-300">
-                    <FaLinkedin className="text-blue-300" />
+                    <a href="https://www.tiktok.com/@abidex.trading" className="p-3 rounded-full bg-white/10 hover:bg-blue-600/20 transition-all duration-300">
+                    <FaTiktok className="text-blue-300" />
                     </a>
                     <a href="https://wa.me/2349136552111" className="p-3 rounded-full bg-white/10 hover:bg-green-500/20 transition-all duration-300">
                     <FaWhatsapp className="text-green-400" />
