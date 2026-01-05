@@ -866,20 +866,6 @@ export default function ChatPageUi() {
                 onCancel={closeConfirmation}
             />
         )}
-        
-        {/* Back button */}
-        <div
-            onClick={() => {
-            if (window.history.length > 1) {
-                router.back();
-            } else {
-                router.push("/");
-            }
-            }}
-            className="cursor-pointer px-4 py-2 border text-gray-400 rounded-lg absolute top-24 md:top-2 right-6 hover:text-white hover:border-white transition"
-        >
-            ← Back
-        </div>
 
         {/* Animated Background Elements */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">

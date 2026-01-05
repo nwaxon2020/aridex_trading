@@ -13,31 +13,44 @@ import {
   FaBath,
   FaRulerCombined,
   FaCheckCircle,
-  FaHome
+  FaHome,
+  FaPlay,
+  FaPause,
+  FaVideo,
+  FaTimes
 } from "react-icons/fa";
-import { useState, useEffect, MouseEvent } from "react";
+import { useState, useEffect, useRef, MouseEvent } from "react";
 import FooterUi from "../components/Footer";
-
 import Link from "next/link";
+import { db } from '@/lib/firebaseconfig';
+import { collection, getDocs } from 'firebase/firestore';
 
 // Define TypeScript interfaces
+interface PropertyFeature {
+  id: string;
+  text: string;
+}
+
 interface Property {
-  id: number;
+  id?: string;
   title: string;
   location: string;
   price: string;
   negotiable: boolean;
   type: string;
+  customType?: string;
   bedrooms: number;
   bathrooms: number;
   area: string;
   images: string[];
+  videoUrl?: string;
   description: string;
-  features: string[];
+  features: PropertyFeature[];
   contact: {
     phone: string;
     email: string;
   };
+  createdAt?: Date;
 }
 
 interface PropertyCardProps {
@@ -46,156 +59,99 @@ interface PropertyCardProps {
   isLiked: boolean;
   onLike: (e: MouseEvent) => void;
   likesCount: number;
+  onPlayVideo?: () => void;
+  hasVideo?: boolean;
+}
+
+interface FirebaseProperty {
+  id?: string;
+  title: string;
+  location: string;
+  price: string;
+  negotiable: boolean;
+  type: string;
+  customType?: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: string;
+  images: string[];
+  videoUrl?: string;
+  description: string;
+  features: PropertyFeature[];
+  contact: {
+    phone: string;
+    email: string;
+  };
+  createdAt?: any;
 }
 
 export default function BlogPageUi() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [likedProperties, setLikedProperties] = useState<number[]>([]);
-  const [propertiesLikes, setPropertiesLikes] = useState<Record<number, number>>({});
+  const [likedProperties, setLikedProperties] = useState<string[]>([]);
+  const [propertiesLikes, setPropertiesLikes] = useState<Record<string, number>>({});
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const properties: Property[] = [
-    {
-      id: 1,
-      title: "Luxury Villa with Ocean View",
-      location: "Lekki, Lagos",
-      price: "$850,000",
-      negotiable: true,
-      type: "Villa",
-      bedrooms: 5,
-      bathrooms: 4,
-      area: "4500 sqft",
-      images: [
-        "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&h=600&fit=crop"
-      ],
-      description: "Stunning modern villa with panoramic ocean views, infinity pool, and smart home features.",
-      features: ["Ocean View", "Infinity Pool", "Smart Home", "Garden", "Garage"],
-      contact: {
-        phone: "+2349136552111",
-        email: "abidextradingnigltd@gmail.com"
-      }
-    },
-    {
-      id: 2,
-      title: "Modern Penthouse Apartment",
-      location: "Abuja Central",
-      price: "$420,000",
-      negotiable: false,
-      type: "Apartment",
-      bedrooms: 3,
-      bathrooms: 3,
-      area: "2800 sqft",
-      images: [
-        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=800&h=600&fit=crop"
-      ],
-      description: "Luxurious penthouse with floor-to-ceiling windows, private terrace, and premium finishes.",
-      features: ["Penthouse", "City View", "Private Terrace", "Gym Access", "Concierge"],
-      contact: {
-        phone: "+2349136552111",
-        email: "abidextradingnigltd@gmail.com"
-      }
-    },
-    {
-      id: 3,
-      title: "Commercial Plaza Space",
-      location: "Chicago, Illinois",
-      price: "$1,200,000",
-      negotiable: true,
-      type: "Commercial",
-      bedrooms: 0,
-      bathrooms: 2,
-      area: "8500 sqft",
-      images: [
-        "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1487956382158-bb926046304a?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop"
-      ],
-      description: "Prime commercial space in downtown Chicago, ideal for retail or office use.",
-      features: ["Prime Location", "High Foot Traffic", "Parking", "Renovated", "Flexible Layout"],
-      contact: {
-        phone: "+2349136552111",
-        email: "abidextradingnigltd@gmail.com"
-      }
-    },
-    {
-      id: 4,
-      title: "Prime Land Plot",
-      location: "Ikenne, Ogun",
-      price: "$150,000",
-      negotiable: true,
-      type: "Land",
-      bedrooms: 0,
-      bathrooms: 0,
-      area: "2.5 acres",
-      images: [
-        "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=800&h=600&fit=crop"
-      ],
-      description: "Prime land plot in developing area with excellent potential for residential development.",
-      features: ["Clear Title", "Good Road Access", "Surveyed", "Drainage", "Fenced"],
-      contact: {
-        phone: "+2349136552111",
-        email: "abidextradingnigltd@gmail.com"
-      }
-    },
-    {
-      id: 5,
-      title: "Beachfront Luxury Estate",
-      location: "Epe, Lagos",
-      price: "$2,500,000",
-      negotiable: false,
-      type: "Estate",
-      bedrooms: 7,
-      bathrooms: 6,
-      area: "12,000 sqft",
-      images: [
-        "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&h=600&fit=crop"
-      ],
-      description: "Exclusive beachfront estate with private beach access, tennis court, and guest house.",
-      features: ["Beachfront", "Private Beach", "Tennis Court", "Guest House", "Security"],
-      contact: {
-        phone: "+2349136552111",
-        email: "abidextradingnigltd@gmail.com"
-      }
-    },
-    {
-      id: 6,
-      title: "Modern Office Complex",
-      location: "Ikeja, Lagos",
-      price: "$750,000",
-      negotiable: true,
-      type: "Commercial",
-      bedrooms: 0,
-      bathrooms: 8,
-      area: "6000 sqft",
-      images: [
-        "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop"
-      ],
-      description: "State-of-the-art office complex with modern amenities and central location.",
-      features: ["Modern Design", "Central AC", "Parking", "Fiber Internet", "Conference Rooms"],
-      contact: {
-        phone: "+2349136552111",
-        email: "abidextradingnigltd@gmail.com"
-      }
-    }
-  ];
+  const phoneNumber = "+2349136552111";
 
-   const phoneNumber = "+2349136552111";
+ useEffect(() => {
+    // Smooth scroll to some pixels from top when component mounts
+    window.scrollTo({
+      top: 50,
+      behavior: 'smooth'
+    });
+  }, []);
+
+  // Load properties from Firebase
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'blog_properties'));
+        const firebaseProperties: FirebaseProperty[] = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as FirebaseProperty[];
+        
+        // Convert Firebase properties to our Property interface
+        const formattedProperties: Property[] = firebaseProperties.map(prop => ({
+          ...prop,
+          features: prop.features || [],
+          images: prop.images || []
+        })).sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt.seconds * 1000).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt.seconds * 1000).getTime() : 0;
+          return timeB - timeA; // Newest first
+        });
+        
+        setProperties(formattedProperties);
+        
+        // Initialize likes for Firebase properties
+        const initialLikes: Record<string, number> = {};
+        formattedProperties.forEach(property => {
+          if (property.id) {
+            initialLikes[property.id] = Math.floor(Math.random() * 50) + 10; // Random likes between 10-60
+          }
+        });
+        
+        setPropertiesLikes(prev => ({
+          ...prev,
+          ...initialLikes
+        }));
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+        // Use static fallback data
+        setProperties(getStaticProperties());
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProperties();
+  }, []);
 
   // Load liked properties and likes count from localStorage on component mount
   useEffect(() => {
@@ -208,14 +164,6 @@ export default function BlogPageUi() {
     
     if (savedPropertiesLikes) {
       setPropertiesLikes(JSON.parse(savedPropertiesLikes));
-    } else {
-      // Initialize with default likes for each property
-      const initialLikes: Record<number, number> = {};
-      properties.forEach(property => {
-        initialLikes[property.id] = Math.floor(Math.random() * 50) + 10; // Random likes between 10-60
-      });
-      setPropertiesLikes(initialLikes);
-      localStorage.setItem('abidex_properties_likes', JSON.stringify(initialLikes));
     }
   }, []);
 
@@ -237,10 +185,15 @@ export default function BlogPageUi() {
 
   const closeModal = () => {
     setSelectedProperty(null);
+    setVideoModalOpen(false);
+    setVideoPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
     document.body.style.overflow = 'auto';
   };
 
-  const handleLike = (id: number, e: MouseEvent) => {
+  const handleLike = (id: string, e: MouseEvent) => {
     e.stopPropagation();
     
     // Update likes count
@@ -275,16 +228,104 @@ export default function BlogPageUi() {
     }
   };
 
+  const handlePlayVideo = (property: Property) => {
+    setSelectedProperty(property);
+    setVideoModalOpen(true);
+    setVideoPlaying(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleVideoControl = () => {
+    if (videoRef.current) {
+      if (videoPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setVideoPlaying(!videoPlaying);
+    }
+  };
+
   // Close modal on escape key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && selectedProperty) {
+      if (e.key === 'Escape' && (selectedProperty || videoModalOpen)) {
         closeModal();
       }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [selectedProperty]);
+  }, [selectedProperty, videoModalOpen]);
+
+  // Auto-play video when modal opens
+  useEffect(() => {
+    if (videoModalOpen && videoRef.current) {
+      videoRef.current.play().catch(e => {
+        console.log("Auto-play prevented:", e);
+      });
+    }
+  }, [videoModalOpen]);
+
+  // Static fallback properties
+  const getStaticProperties = (): Property[] => [
+    {
+      id: '1',
+      title: "Luxury Villa with Ocean View",
+      location: "Lekki, Lagos",
+      price: "$850,000",
+      negotiable: true,
+      type: "Villa",
+      bedrooms: 5,
+      bathrooms: 4,
+      area: "4500 sqft",
+      images: [
+        "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&h=600&fit=crop"
+      ],
+      description: "Stunning modern villa with panoramic ocean views, infinity pool, and smart home features.",
+      features: [{id: '1', text: "Ocean View"}, {id: '2', text: "Infinity Pool"}, {id: '3', text: "Smart Home"}],
+      contact: {
+        phone: "+2349136552111",
+        email: "abidextradingnigltd@gmail.com"
+      }
+    },
+    {
+      id: '2',
+      title: "Modern Penthouse Apartment",
+      location: "Abuja Central",
+      price: "$420,000",
+      negotiable: false,
+      type: "Apartment",
+      bedrooms: 3,
+      bathrooms: 3,
+      area: "2800 sqft",
+      images: [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=800&h=600&fit=crop"
+      ],
+      description: "Luxurious penthouse with floor-to-ceiling windows, private terrace, and premium finishes.",
+      features: [{id: '1', text: "Penthouse"}, {id: '2', text: "City View"}, {id: '3', text: "Private Terrace"}],
+      contact: {
+        phone: "+2349136552111",
+        email: "abidextradingnigltd@gmail.com"
+      }
+    }
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading properties...</p>
+        </div>
+      </div>
+    );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#0a0e1a] via-[#0f1425] to-[#0a0e1a] text-white overflow-x-hidden">
@@ -294,6 +335,48 @@ export default function BlogPageUi() {
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
+
+        {/* Video Modal */}
+        {videoModalOpen && selectedProperty && selectedProperty.videoUrl && (
+          <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60] p-4">
+            <div className="relative w-full max-w-4xl mx-auto">
+              {/* Close Button */}
+              <button
+                onClick={closeModal}
+                className="absolute -top-10 right-0 md:-right-10 z-10 p-3 bg-red-600 hover:bg-red-700 rounded-full transition-colors"
+              >
+                <FaTimes className="text-xl" />
+              </button>
+              
+              {/* Video Player */}
+              <div className="relative rounded-2xl overflow-hidden bg-black">
+                <video
+                  ref={videoRef}
+                  src={selectedProperty.videoUrl}
+                  autoPlay
+                  controls={false}
+                  className="w-full h-auto max-h-[80vh]"
+                  onPlay={() => setVideoPlaying(true)}
+                  onPause={() => setVideoPlaying(false)}
+                />
+                
+                {/* Custom Controls */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
+                  <button
+                    onClick={handleVideoControl}
+                    className="p-3 bg-blue-600/80 hover:bg-blue-700/80 rounded-full backdrop-blur-sm transition-colors"
+                  >
+                    {videoPlaying ? <FaPause /> : <FaPlay />}
+                  </button>
+                </div>
+              </div>
+              
+              <p className="text-center text-gray-400 mt-4 text-sm">
+                Click the {videoPlaying ? 'pause' : 'play'} button to control video
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Header */}
         <section className="relative pt-24 pb-8 px-6">
@@ -355,16 +438,18 @@ export default function BlogPageUi() {
                     key={property.id}
                     property={property}
                     onClick={() => handlePropertyClick(property)}
-                    isLiked={likedProperties.includes(property.id)}
-                    onLike={(e) => handleLike(property.id, e)}
-                    likesCount={propertiesLikes[property.id] || 0}
+                    isLiked={property.id ? likedProperties.includes(property.id) : false}
+                    onLike={(e) => property.id && handleLike(property.id, e)}
+                    likesCount={property.id ? propertiesLikes[property.id] || 0 : 0}
+                    onPlayVideo={() => handlePlayVideo(property)}
+                    hasVideo={!!property.videoUrl}
                   />
               ))}
             </div>
         </section>
 
         {/* Property Detail Modal */}
-        {selectedProperty && (
+        {selectedProperty && !videoModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center px-2 p-4 bg-black/80 backdrop-blur-sm">
               <div className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#0f1425] to-[#0a0e1a] rounded-3xl border border-white/10 shadow-2xl">
                 
@@ -383,57 +468,57 @@ export default function BlogPageUi() {
                 
                 {/* Image Gallery */}
                 <div className="relative">
-                    <div className="relative h-96 rounded-2xl overflow-hidden mb-4">
-                    <img
-                        src={selectedProperty.images[selectedImage]}
-                        alt={selectedProperty.title}
-                        className="w-full h-full object-cover"
-                    />
-                    
-                    {/* Navigation Arrows */}
-                    <button
-                        onClick={prevImage}
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all"
-                    >
-                        <FaChevronLeft className="text-white" />
-                    </button>
-                    <button
-                        onClick={nextImage}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all"
-                    >
-                        <FaChevronRight className="text-white" />
-                    </button>
+                    <div className="relative h-96 md:h-full max-h-150 rounded-2xl overflow-hidden mb-4">
+                      <img
+                          src={selectedProperty.images[selectedImage]}
+                          alt={selectedProperty.title}
+                          className="w-full h-full object-cover"
+                      />
+                      
+                      {/* Navigation Arrows */}
+                      <button
+                          onClick={prevImage}
+                          className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all"
+                      >
+                          <FaChevronLeft className="text-white" />
+                      </button>
+                      <button
+                          onClick={nextImage}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all"
+                      >
+                          <FaChevronRight className="text-white" />
+                      </button>
 
-                    {/* Price Tag */}
-                    <div className="absolute top-4 left-4 bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-2 rounded-full">
-                        <span className="font-bold text-lg">{selectedProperty.price}</span>
+                      {/* Price Tag */}
+                      <div className="absolute top-4 left-4 bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-2 rounded-full">
+                          <span className="font-bold text-lg">₦{selectedProperty.price}</span>
+                      </div>
+
+                      {/* Image Counter */}
+                      <div className="absolute bottom-4 right-4 bg-black/50 px-3 py-1 rounded-full text-sm">
+                          {selectedImage + 1} / {selectedProperty.images.length}
+                      </div>
                     </div>
 
-                    {/* Image Counter */}
-                    <div className="absolute bottom-4 right-4 bg-black/50 px-3 py-1 rounded-full text-sm">
-                        {selectedImage + 1} / {selectedProperty.images.length}
-                    </div>
-                    </div>
-
-                    {/* Thumbnails */}
-                    <div className="grid grid-cols-4 gap-2">
-                    {selectedProperty.images.map((img: string, index: number) => (
+                    {/* Thumbnails - Scrollable */}
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                      {selectedProperty.images.map((img: string, index: number) => (
                         <button
-                        key={index}
-                        onClick={() => setSelectedImage(index)}
-                        className={`relative h-20 rounded-xl overflow-hidden transition-all duration-300 ${
+                          key={index}
+                          onClick={() => setSelectedImage(index)}
+                          className={`flex-shrink-0 relative w-20 h-20 rounded-xl overflow-hidden transition-all duration-300 ${
                             selectedImage === index 
                             ? 'ring-2 ring-blue-400 scale-105' 
                             : 'opacity-60 hover:opacity-100'
-                        }`}
+                          }`}
                         >
-                        <img
+                          <img
                             src={img}
                             alt={`View ${index + 1}`}
                             className="w-full h-full object-cover"
-                        />
+                          />
                         </button>
-                    ))}
+                      ))}
                     </div>
                 </div>
 
@@ -444,19 +529,19 @@ export default function BlogPageUi() {
                         <h2 className="text-xl md:text-3xl font-bold">{selectedProperty.title}</h2>
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-gray-400">
-                              {propertiesLikes[selectedProperty.id] || 0} likes
+                              {selectedProperty.id ? (propertiesLikes[selectedProperty.id] || 0) : 0} likes
                           </span>
                           <button
-                              onClick={(e) => handleLike(selectedProperty.id, e)}
+                              onClick={(e) => selectedProperty.id && handleLike(selectedProperty.id, e)}
                               className={`p-3 rounded-full transition-all relative group ${
-                              likedProperties.includes(selectedProperty.id)
+                              selectedProperty.id && likedProperties.includes(selectedProperty.id)
                                   ? 'bg-pink-500/20 text-pink-400'
                                   : 'bg-white/10 hover:bg-white/20'
                               }`}
                           >
-                              <FaHeart className={`${likedProperties.includes(selectedProperty.id) ? 'fill-pink-400' : ''}`} />
+                              <FaHeart className={`${selectedProperty.id && likedProperties.includes(selectedProperty.id) ? 'fill-pink-400' : ''}`} />
                               <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-black/80 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                              {likedProperties.includes(selectedProperty.id) ? 'Unlike' : 'Like'}
+                              {selectedProperty.id && likedProperties.includes(selectedProperty.id) ? 'Unlike' : 'Like'}
                               </div>
                           </button>
                         </div>
@@ -508,7 +593,7 @@ export default function BlogPageUi() {
                         <FaCheckCircle className="text-pink-400" />
                         </div>
                         <p className="text-sm text-gray-400">Type</p>
-                        <p className="md:text-xl font-bold">{selectedProperty.type}</p>
+                        <p className="md:text-xl font-bold">{selectedProperty.customType || selectedProperty.type}</p>
                       </div>
                     </div>
 
@@ -516,24 +601,40 @@ export default function BlogPageUi() {
                     <div className="relative">
                       <h3 className="text-xl font-bold mb-4">Features</h3>
                       <div className="flex flex-wrap gap-2">
-                          {selectedProperty.features.map((feature: string, index: number) => (
+                          {selectedProperty.features.map((feature: PropertyFeature, index: number) => (
                           <span 
-                              key={index}
+                              key={feature.id || index}
                               className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm"
                           >
-                              {feature}
+                              {feature.text}
                           </span>
                           ))}
                       </div>
+
+                      {/* Video Button */}
+                      {selectedProperty.videoUrl && (
+                        <div className="mt-4">
+                          <button
+                            onClick={() => {
+                              setVideoModalOpen(true);
+                              setVideoPlaying(true);
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg transition-all duration-300"
+                          >
+                            <FaPlay />
+                            Play Video Tour
+                          </button>
+                        </div>
+                      )}
 
                       {/* Chat Page Link */}
                       <Link 
                         href={"/chat"} 
                         className="absolute top-22 right-2 flex justify-center items-center text-center bg-blue-800 border-3 border-white w-15 h-15 rounded-full p-2 overflow-hidden"
-                        scroll={false}  // Add this
+                        scroll={false}
                         onClick={(e) => {
                           e.stopPropagation();
-                          closeModal(); // Make sure to close the modal first
+                          closeModal();
                         }}
                       >
                         <small className="text-xs text-blue-50">Chat Us Now!</small>
@@ -592,7 +693,7 @@ export default function BlogPageUi() {
 }
 
 /* PROPERTY CARD COMPONENT */
-function PropertyCard({ property, onClick, isLiked, onLike, likesCount }: PropertyCardProps) {
+function PropertyCard({ property, onClick, isLiked, onLike, likesCount, onPlayVideo, hasVideo }: PropertyCardProps) {
   const [currentImage, setCurrentImage] = useState(0);
 
   return (
@@ -624,7 +725,7 @@ function PropertyCard({ property, onClick, isLiked, onLike, likesCount }: Proper
       {/* Image Container */}
       <div className="relative h-64 overflow-hidden">
         <img
-          src={property.images[currentImage]}
+          src={property.images[currentImage] || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop"}
           alt={property.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
@@ -652,14 +753,21 @@ function PropertyCard({ property, onClick, isLiked, onLike, likesCount }: Proper
           <FaExpand className="text-sm" />
         </div>
 
+        {/* Video Indicator */}
+        {hasVideo && (
+          <div className="absolute top-4 left-12 bg-purple-600/80 text-white p-2 rounded-full">
+            <FaVideo className="text-sm" />
+          </div>
+        )}
+
         {/* Price Tag */}
         <div className="absolute bottom-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 rounded-full">
-          <span className="font-bold">{property.price}</span>
+          <span className="font-bold">₦{property.price}</span>
         </div>
 
         {/* Property Type */}
         <div className="absolute top-4 left-4 bg-black/70 px-3 py-1 rounded-full text-sm">
-          {property.type}
+          {property.customType || property.type}
         </div>
       </div>
 
@@ -685,13 +793,13 @@ function PropertyCard({ property, onClick, isLiked, onLike, likesCount }: Proper
         <p className="text-gray-400 text-sm mb-4 line-clamp-2">{property.description}</p>
 
         {/* Features */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {property.features.slice(0, 3).map((feature: string, index: number) => (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {property.features.slice(0, 3).map((feature: PropertyFeature, index: number) => (
             <span 
-              key={index}
+              key={feature.id || index}
               className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs"
             >
-              {feature}
+              {feature.text}
             </span>
           ))}
           {property.features.length > 3 && (
@@ -702,7 +810,7 @@ function PropertyCard({ property, onClick, isLiked, onLike, likesCount }: Proper
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-sm text-gray-400">
               <FaBed className="text-blue-400" />
@@ -723,6 +831,24 @@ function PropertyCard({ property, onClick, isLiked, onLike, likesCount }: Proper
           </div>
         </div>
 
+        {/* Video Button (if video exists) */}
+        {hasVideo && onPlayVideo ? (
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlayVideo();
+            }}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-300 flex items-center justify-center gap-2 mb-2"
+          >
+            <FaPlay />
+            Play Video
+          </button>
+        ) : (
+          <div className="w-full py-3 text-center text-gray-500 text-sm mb-2">
+            No video available
+          </div>
+        )}
+
         {/* View Button */}
         <button className="w-full py-3 rounded-xl border border-white/20 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:border-transparent transition-all duration-300 flex items-center justify-center gap-2">
           <FaExpand />
@@ -732,4 +858,3 @@ function PropertyCard({ property, onClick, isLiked, onLike, likesCount }: Proper
     </div>
   );
 }
-

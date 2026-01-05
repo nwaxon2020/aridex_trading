@@ -11,6 +11,7 @@ import {
   FaChevronDown,
   FaStar,
   FaBuilding,
+  FaEye
 } from "react-icons/fa6";
 import { useEffect, useState, useRef } from "react";
 import { FaGlobeAmericas, FaHome, FaMapMarker, FaPlay, FaPause, FaTimes, FaInfoCircle } from "react-icons/fa"
@@ -34,6 +35,11 @@ export default function HomePageUi() {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [showDescription, setShowDescription] = useState<Record<string, boolean>>({});
+  
+  // NEW STATE for image modal
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -100,6 +106,18 @@ export default function HomePageUi() {
     }
   };
 
+  // NEW FUNCTION: Open image modal
+  const openImageModal = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setImageModalOpen(true);
+  };
+
+  // NEW FUNCTION: Close image modal
+  const closeImageModal = () => {
+    setImageModalOpen(false);
+    setSelectedImage(null);
+  };
+
   // Auto-play video when modal opens
   useState(() => {
     if (videoModalOpen && videoRef.current) {
@@ -138,6 +156,30 @@ export default function HomePageUi() {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
+
+      {/* Image Modal - NEW */}
+      {imageModalOpen && selectedImage && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+          <div className="relative w-full max-w-6xl mx-auto">
+            {/* Close Button */}
+            <button
+              onClick={closeImageModal}
+              className="absolute -top-10 right-0 md:-right-10 z-10 p-3 bg-red-600 hover:bg-red-700 rounded-full transition-colors"
+            >
+              <FaTimes className="text-xl" />
+            </button>
+            
+            {/* Image Display */}
+            <div className="relative rounded-2xl overflow-hidden bg-black">
+              <img
+                src={selectedImage}
+                alt="Full size property image"
+                className="w-full h-auto max-h-[80vh] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* HERO SECTION - Enhanced */}
       <section className="relative h-screen w-full overflow-hidden">
@@ -309,13 +351,27 @@ export default function HomePageUi() {
                   )}
                   
                   <div className="mb-6">
-                    <div className="w-full h-full max-h-100 md:h-70 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
+                    <div className="relative w-full h-full max-h-100 md:h-70 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
                       {property.imageUrl ? (
-                        <img 
-                          src={property.imageUrl} 
-                          alt={property.type}
-                          className="w-full h-full object-contain md:object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
+                        <>
+                          <img 
+                            src={property.imageUrl} 
+                            alt={property.type}
+                            className="w-full h-full object-contain md:object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          
+                          {/* View Image Button - NEW */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openImageModal(property.imageUrl);
+                            }}
+                            className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-600 to-emerald-500 rounded-full text-xs font-medium hover:from-green-700 hover:to-emerald-600 transition-all duration-300 z-10"
+                          >
+                            <FaEye className="text-xs" />
+                            <span>View Image</span>
+                          </button>
+                        </>
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
                       )}
@@ -373,6 +429,11 @@ export default function HomePageUi() {
                       </div>
                     )}
                   </div>
+
+                  {/* Vew more properties in blog page button */}
+                  <div className="my-4 text-center md:my-2 md:text-left">
+                    <Link scroll={false} href={"/blog"} className="text-sm text-amber-500 underline">View More!</Link>
+                  </div>
                   
                   {/* View Video Button - Only show if video exists */}
                   {property.videoUrl ? (
@@ -392,14 +453,15 @@ export default function HomePageUi() {
                       No video available
                     </div>
                   )}
+
                 </div>
               )) : (
               // Fallback to original demo properties if Firebase is empty
               [
-                { type: "Luxury Villa", location: "Lagos", price: "$850,000" },
-                { type: "Modern Apartment", location: "Abuja", price: "$420,000" },
-                { type: "Commercial Space", location: "Chicago", price: "$1.2M" },
-                { type: "Land Plot", location: "Ikenne", price: "$150,000" },
+                { type: "Luxury Villa", location: "Lagos", price: "$850,000", imageUrl: "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&h=600&fit=crop" },
+                { type: "Modern Apartment", location: "Abuja", price: "$420,000", imageUrl: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop" },
+                { type: "Commercial Space", location: "Chicago", price: "$1.2M", imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop" },
+                { type: "Land Plot", location: "Ikenne", price: "$150,000", imageUrl: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop" },
               ].map((property, index) => (
                 <div 
                   key={index}
@@ -410,8 +472,22 @@ export default function HomePageUi() {
                     <FaHome className="text-xl" />
                   </div>
                   <div className="mb-6">
-                    <div className="w-full h-48 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
+                    <div className="relative w-full h-48 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 mb-4 overflow-hidden">
                       <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-110 transition-transform duration-500"></div>
+                      
+                      {/* View Image Button for demo properties - NEW */}
+                      {property.imageUrl && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openImageModal(property.imageUrl);
+                          }}
+                          className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-600 to-emerald-500 rounded-full text-xs font-medium hover:from-green-700 hover:to-emerald-600 transition-all duration-300 z-10"
+                        >
+                          <FaEye className="text-xs" />
+                          <span>View Image</span>
+                        </button>
+                      )}
                     </div>
                     <h3 className="md:text-xl font-bold mb-2">{property.type}</h3>
                     <p className="text-sm md:text-base text-gray-400 flex items-center gap-2 mb-3">
