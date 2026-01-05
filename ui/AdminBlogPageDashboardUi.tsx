@@ -18,8 +18,6 @@ import {
   FaPlus, 
   FaTrash, 
   FaEdit, 
-  FaPhone,
-  FaEnvelope,
   FaTimes,
   FaUpload,
   FaImage,
@@ -31,7 +29,6 @@ import {
   FaBath,
   FaRulerCombined,
   FaCheck,
-  FaPlay
 } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 
@@ -516,57 +513,57 @@ export default function AdminBlogPageDashboard() {
             {/* Delete Confirmation Modal */}
             {deleteModalOpen && propertyToDelete && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-2">
-                <div className="bg-gray-800 rounded-2xl px-3 py-6 md:p-6 max-w-md w-full">
-                    <div className="flex flex-col items-center text-center mb-6">
-                    <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
-                        <FaExclamationTriangle className="text-2xl text-red-500" />
+                    <div className="bg-gray-800 rounded-2xl px-3 py-6 md:p-6 max-w-md w-full">
+                        <div className="flex flex-col items-center text-center mb-6">
+                            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
+                                <FaExclamationTriangle className="text-2xl text-red-500" />
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">Delete Property</h3>
+                            <p className="text-gray-400">
+                                Are you sure you want to delete "{propertyToDelete.title}"? This action cannot be undone.
+                            </p>
+                        </div>
+                        
+                        <div className="flex gap-4">
+                        <button
+                            onClick={closeDeleteModal}
+                            className="flex-1 py-3 border border-gray-600 rounded-lg hover:bg-gray-700 transition"
+                            disabled={deleting}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={confirmDelete}
+                            disabled={deleting}
+                            className="flex-1 py-3 bg-red-600 hover:bg-red-700 rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50"
+                        >
+                            <FaTrash />
+                            {deleting ? 'Deleting...' : 'Delete'}
+                        </button>
+                        </div>
                     </div>
-                    <h3 className="text-xl font-bold mb-2">Delete Property</h3>
-                    <p className="text-gray-400">
-                        Are you sure you want to delete "{propertyToDelete.title}"? This action cannot be undone.
-                    </p>
-                    </div>
-                    
-                    <div className="flex gap-4">
-                    <button
-                        onClick={closeDeleteModal}
-                        className="flex-1 py-3 border border-gray-600 rounded-lg hover:bg-gray-700 transition"
-                        disabled={deleting}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={confirmDelete}
-                        disabled={deleting}
-                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50"
-                    >
-                        <FaTrash />
-                        {deleting ? 'Deleting...' : 'Delete'}
-                    </button>
-                    </div>
-                </div>
                 </div>
             )}
 
             {/* ADD/EDIT PROPERTY SECTION */}
             <div className="bg-gray-800/30 rounded-2xl px-3 py-6 md:p-6 border border-gray-700">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <h2 className="text-xl font-bold flex items-center gap-3">
-                    <FaHome className="text-blue-400" />
-                    {editingProperty?.id ? 'Edit Property' : 'Add New Property'}
-                </h2>
-                
-                <div className="flex gap-3">
-                    {!editingProperty && (
-                    <button
-                        onClick={addNewProperty}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2 transition"
-                    >
-                        <FaPlus />
-                        Add Property
-                    </button>
-                    )}
-                </div>
+                    <h2 className="text-xl font-bold flex items-center gap-3">
+                        <FaHome className="text-blue-400" />
+                        {editingProperty?.id ? 'Edit Property' : 'Add New Property'}
+                    </h2>
+                    
+                    <div className="flex gap-3">
+                        {!editingProperty && (
+                        <button
+                            onClick={addNewProperty}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2 transition"
+                        >
+                            <FaPlus />
+                            Add Property
+                        </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Property Form */}
@@ -574,123 +571,123 @@ export default function AdminBlogPageDashboard() {
                 <div className="space-y-6">
                     {/* Basic Information */}
                     <div className="space-y-4">
-                    <h3 className="text-lg font-bold mb-2">Basic Information</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                        <label className="block text-sm font-medium mb-2">Property Title</label>
-                        <input
-                            type="text"
-                            value={editingProperty.title}
-                            onChange={(e) => setEditingProperty({...editingProperty, title: e.target.value})}
-                            placeholder="Luxury Villa with Ocean View"
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
-                        />
-                        </div>
+                        <h3 className="text-lg font-bold mb-2">Basic Information</h3>
                         
-                        <div>
-                        <label className="block text-sm font-medium mb-2">Location</label>
-                        <input
-                            type="text"
-                            value={editingProperty.location}
-                            onChange={(e) => setEditingProperty({...editingProperty, location: e.target.value})}
-                            placeholder="Lekki, Lagos"
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
-                        />
-                        </div>
-                        
-                        <div>
-                        <label className="block text-sm font-medium mb-2">Price</label>
-                        <input
-                            type="text"
-                            value={editingProperty.price}
-                            onChange={(e) => setEditingProperty({...editingProperty, price: e.target.value})}
-                            placeholder="$850,000"
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
-                        />
-                        </div>
-                        
-                        <div>
-                        <label className="block text-sm font-medium mb-2">Property Type</label>
-                        <select
-                            value={editingProperty.type}
-                            onChange={(e) => handleTypeChange(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
-                        >
-                            {propertyTypes.map(type => (
-                            <option key={type} value={type}>{type}</option>
-                            ))}
-                        </select>
-                        
-                        {/* Show custom type input when "Others" is selected */}
-                        {editingProperty.type === 'Others' && (
-                            <div className="mt-2">
-                            <label className="block text-sm font-medium mb-2">Custom Property Type</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                            <label className="block text-sm font-medium mb-2">Property Title</label>
                             <input
                                 type="text"
-                                value={editingProperty.customType || ''}
-                                onChange={(e) => setEditingProperty({...editingProperty, customType: e.target.value})}
-                                placeholder="Enter custom type (e.g., Car, Boat, Yacht, etc.)"
+                                value={editingProperty.title}
+                                onChange={(e) => setEditingProperty({...editingProperty, title: e.target.value})}
+                                placeholder="Luxury Villa with Ocean View"
                                 className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
                             />
                             </div>
-                        )}
-                        </div>
-                        
-                        <div>
-                        <label className="block text-sm font-medium mb-2">Bedrooms</label>
-                        <input
-                            type="number"
-                            value={editingProperty.bedrooms}
-                            onChange={(e) => setEditingProperty({...editingProperty, bedrooms: parseInt(e.target.value)})}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
-                        />
-                        </div>
-                        
-                        <div>
-                        <label className="block text-sm font-medium mb-2">Bathrooms</label>
-                        <input
-                            type="number"
-                            value={editingProperty.bathrooms}
-                            onChange={(e) => setEditingProperty({...editingProperty, bathrooms: parseInt(e.target.value)})}
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
-                        />
-                        </div>
-                        
-                        <div>
-                        <label className="block text-sm font-medium mb-2">Area</label>
-                        <input
-                            type="text"
-                            value={editingProperty.area}
-                            onChange={(e) => setEditingProperty({...editingProperty, area: e.target.value})}
-                            placeholder="4500 sqft"
-                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
-                        />
-                        </div>
-                        
-                        <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2">
+                            
+                            <div>
+                            <label className="block text-sm font-medium mb-2">Location</label>
                             <input
-                            type="checkbox"
-                            checked={editingProperty.negotiable}
-                            onChange={(e) => setEditingProperty({...editingProperty, negotiable: e.target.checked})}
-                            className="w-4 h-4 rounded"
+                                type="text"
+                                value={editingProperty.location}
+                                onChange={(e) => setEditingProperty({...editingProperty, location: e.target.value})}
+                                placeholder="Lekki, Lagos"
+                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
                             />
-                            <span className="text-sm">Price is negotiable</span>
-                        </label>
+                            </div>
+                            
+                            <div>
+                            <label className="block text-sm font-medium mb-2">Price</label>
+                            <input
+                                type="text"
+                                value={editingProperty.price}
+                                onChange={(e) => setEditingProperty({...editingProperty, price: e.target.value})}
+                                placeholder="$850,000"
+                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
+                            />
+                            </div>
+                            
+                            <div>
+                            <label className="block text-sm font-medium mb-2">Property Type</label>
+                            <select
+                                value={editingProperty.type}
+                                onChange={(e) => handleTypeChange(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
+                            >
+                                {propertyTypes.map(type => (
+                                <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
+                            
+                            {/* Show custom type input when "Others" is selected */}
+                            {editingProperty.type === 'Others' && (
+                                <div className="mt-2">
+                                <label className="block text-sm font-medium mb-2">Custom Property Type</label>
+                                <input
+                                    type="text"
+                                    value={editingProperty.customType || ''}
+                                    onChange={(e) => setEditingProperty({...editingProperty, customType: e.target.value})}
+                                    placeholder="Enter custom type (e.g., Car, Boat, Yacht, etc.)"
+                                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
+                                />
+                                </div>
+                            )}
+                            </div>
+                            
+                            <div>
+                            <label className="block text-sm font-medium mb-2">Bedrooms</label>
+                            <input
+                                type="number"
+                                value={editingProperty.bedrooms}
+                                onChange={(e) => setEditingProperty({...editingProperty, bedrooms: parseInt(e.target.value)})}
+                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
+                            />
+                            </div>
+                            
+                            <div>
+                            <label className="block text-sm font-medium mb-2">Bathrooms</label>
+                            <input
+                                type="number"
+                                value={editingProperty.bathrooms}
+                                onChange={(e) => setEditingProperty({...editingProperty, bathrooms: parseInt(e.target.value)})}
+                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
+                            />
+                            </div>
+                            
+                            <div>
+                            <label className="block text-sm font-medium mb-2">Area</label>
+                            <input
+                                type="text"
+                                value={editingProperty.area}
+                                onChange={(e) => setEditingProperty({...editingProperty, area: e.target.value})}
+                                placeholder="4500 sqft"
+                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg"
+                            />
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2">
+                                <input
+                                type="checkbox"
+                                checked={editingProperty.negotiable}
+                                onChange={(e) => setEditingProperty({...editingProperty, negotiable: e.target.checked})}
+                                className="w-4 h-4 rounded"
+                                />
+                                <span className="text-sm">Price is negotiable</span>
+                            </label>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Description</label>
-                        <textarea
-                        value={editingProperty.description}
-                        onChange={(e) => setEditingProperty({...editingProperty, description: e.target.value})}
-                        placeholder="Stunning modern villa with panoramic ocean views..."
-                        rows={3}
-                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg resize-none"
-                        />
-                    </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Description</label>
+                            <textarea
+                            value={editingProperty.description}
+                            onChange={(e) => setEditingProperty({...editingProperty, description: e.target.value})}
+                            placeholder="Stunning modern villa with panoramic ocean views..."
+                            rows={3}
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg resize-none"
+                            />
+                        </div>
                     </div>
 
                     {/* Images Section */}
@@ -1028,8 +1025,8 @@ export default function AdminBlogPageDashboard() {
                         </div>
                         
                         <div className="flex items-center gap-2 text-sm text-blue-400 mb-2">
-                        <FaHome />
-                        <span>{property.customType || property.type}</span>
+                            <FaHome />
+                            <span>{property.customType || property.type}</span>
                         </div>
                         
                         {property.videoUrl && (
