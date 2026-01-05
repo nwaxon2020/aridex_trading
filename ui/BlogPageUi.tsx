@@ -51,6 +51,7 @@ interface Property {
     email: string;
   };
   createdAt?: Date;
+  updatedAt?: any;
 }
 
 interface PropertyCardProps {
@@ -83,6 +84,7 @@ interface FirebaseProperty {
     email: string;
   };
   createdAt?: any;
+  updatedAt?: any;
 }
 
 export default function BlogPageUi() {
@@ -122,9 +124,20 @@ export default function BlogPageUi() {
           features: prop.features || [],
           images: prop.images || []
         })).sort((a, b) => {
-          const timeA = a.createdAt ? new Date(a.createdAt.seconds * 1000).getTime() : 0;
-          const timeB = b.createdAt ? new Date(b.createdAt.seconds * 1000).getTime() : 0;
-          return timeB - timeA; // Newest first
+          // Use updatedAt if available, otherwise use createdAt
+          const timeA = a.updatedAt 
+            ? new Date(a.updatedAt.seconds * 1000).getTime()
+            : a.createdAt 
+              ? new Date(a.createdAt.seconds * 1000).getTime()
+              : 0;
+          
+          const timeB = b.updatedAt 
+            ? new Date(b.updatedAt.seconds * 1000).getTime()
+            : b.createdAt 
+              ? new Date(b.createdAt.seconds * 1000).getTime()
+              : 0;
+          
+          return timeB - timeA; // Newest updated first
         });
         
         setProperties(formattedProperties);
@@ -501,7 +514,7 @@ export default function BlogPageUi() {
                     </div>
 
                     {/* Thumbnails - Scrollable */}
-                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                    <div className="flex gap-2 overflow-x-auto p-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                       {selectedProperty.images.map((img: string, index: number) => (
                         <button
                           key={index}
