@@ -2,25 +2,25 @@ name: Deploy to Firebase Hosting on merge
 on:
   push:
     branches:
-      - master  # Verified you are using the 'master' branch
+      - master
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      # 1. ADD THIS: Install pnpm
+      # STEP 1: This installs pnpm on the GitHub computer
       - uses: pnpm/action-setup@v4
         with:
-          version: 9  # Use your local pnpm version (e.g., 9)
+          version: 9
 
-      # 2. ADD THIS: Setup Node.js and cache pnpm
+      # STEP 2: This sets up Node.js and links it to pnpm
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
 
-      # 3. This is where it was failing because pnpm wasn't found
+      # STEP 3: Now pnpm will actually work!
       - run: pnpm install && pnpm build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
