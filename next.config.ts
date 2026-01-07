@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: [], // Add domains if you use Next.js Image component
   },
+
 };
 
 export default nextConfig;
