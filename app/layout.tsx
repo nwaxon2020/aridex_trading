@@ -17,6 +17,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        {/* AdSense script here */}
+        <script 
+          async 
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7919953215202471"
+          crossOrigin="anonymous"
+        />
+      </head>
+
       <body className={`${inter.className} bg-black text-white`}>
         <div className="fixed inset-0 bg-gradient-to-br from-purple-900/20 via-black to-blue-900/20 pointer-events-none" />
         <div className="relative z-10">
